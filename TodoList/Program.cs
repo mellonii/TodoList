@@ -3,46 +3,45 @@
 class Program
 {
     private static void Main()
-    { 
+    {
         int state;
-        var tasks = new Tasks();
+        var taskService = new TaskService();
 
         do
         {
+            taskService.ShowTasks();
             Console.WriteLine("""
                               Список доступных команд:
                               0 - выход
                               1 - добавить задачу
                               2 - выполнить задачу
-                              3 - просмотр задач
+                              3 - удалить задачу
                               """ + "\n");
-            
-            state = Convert.ToInt32(Console.ReadLine()); 
-            
+
+            state = Convert.ToInt32(Console.ReadLine());
+
             switch (state)
             {
-                case 0: 
+                case 0:
                     break;
-                case 1: 
-                    tasks.AddTask(); 
-                    Console.ReadKey(); 
+                case 1:
+                    taskService.AddTask();
+                    Console.ReadKey();
                     break;
-                case 2: 
-                    tasks.DeleteTask(); 
-                    Console.ReadKey(); 
+                case 2:
+                    taskService.DoneTask();
+                    Console.ReadKey();
                     break;
-                case 3: 
-                    tasks.ShowTasks(); 
-                    Console.ReadKey(); 
+                case 3:
+                    taskService.DeleteTask();
+                    Console.ReadKey();
                     break;
-                default: 
+                default:
                     Console.WriteLine("Такой операции не существует\n"); break;
             }
-            
+
             Console.Clear();
-            
+
         } while (state != 0);
     }
 }
-
-     
