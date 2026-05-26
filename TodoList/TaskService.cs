@@ -16,16 +16,19 @@ internal class TaskService
                           """ + "\n");
         
         int state = Convert.ToInt32(Console.ReadLine());
-        
-        Console.WriteLine("Введите описание задачи:");
-        string title = "" + Console.ReadLine();
+        string title;
 
         switch (state)
         {
+            case 0:
+                return;
             case 1: 
-                _currentTasksList.Add(new Task(title));
+                Console.WriteLine("Введите описание задачи:");
+                _currentTasksList.Add(new Task("" + Console.ReadLine()));
                 break;
             case 2:
+                Console.WriteLine("Введите описание задачи:");
+                title = "" + Console.ReadLine();
                 Console.WriteLine("Введите дату в формате dd/mm/YYYY hh:mm:ss:");
                 try
                 {
@@ -39,8 +42,23 @@ internal class TaskService
                 }
                 break;
             case 3:
+                Console.WriteLine("Введите описание задачи:");
+                title = "" + Console.ReadLine();
+                Console.WriteLine("Введи подзадачи:");
+                List<string> subTasks = [];
+                while (true)
+                {
+                    string subTask = "" + Console.ReadLine();
+                    if (subTask is "")
+                    {
+                        break;
+                    }
+                    subTasks.Add(subTask);
+                }
+                _currentTasksList.Add(new ChecklistTask(title, subTasks));
                 break;
             default:
+                Console.WriteLine("Такой операции не существует\n"); 
                 return;
         }
         Console.WriteLine("Таска добавлена\n");

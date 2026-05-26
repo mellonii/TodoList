@@ -37,7 +37,9 @@ class Program
                     Console.ReadKey();
                     break;
                 default:
-                    Console.WriteLine("Такой операции не существует\n"); break;
+                    Console.WriteLine("Такой операции не существует\n"); 
+                    Console.ReadKey();
+                    break;
             }
 
             Console.Clear();
