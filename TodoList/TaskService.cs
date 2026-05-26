@@ -7,8 +7,42 @@ internal class TaskService
     
     public void AddTask()
     {
+        Console.WriteLine("\n" + """
+                          Выбери тип создаваемой задачи:
+                          1 - обычная
+                          2 - с дедлайном
+                          3 - с подзадачами
+                          0 - вернуться
+                          """ + "\n");
+        
+        int state = Convert.ToInt32(Console.ReadLine());
+        
         Console.WriteLine("Введите описание задачи:");
-        _currentTasksList.Add(new Task("" + Console.ReadLine()));
+        string title = "" + Console.ReadLine();
+
+        switch (state)
+        {
+            case 1: 
+                _currentTasksList.Add(new Task(title));
+                break;
+            case 2:
+                Console.WriteLine("Введите дату в формате dd/mm/YYYY hh:mm:ss:");
+                try
+                {
+                    DateTime deadlineTime = DateTime.Parse("" + Console.ReadLine());
+                    _currentTasksList.Add(new DeadlinedTask(title, deadlineTime));
+                }
+                catch
+                {
+                    Console.WriteLine("Неправильно введена дата");
+                    return;
+                }
+                break;
+            case 3:
+                break;
+            default:
+                return;
+        }
         Console.WriteLine("Таска добавлена\n");
     }
 
@@ -83,7 +117,7 @@ internal class TaskService
             Console.WriteLine("Список текущих задач:");
             for (var i = 0; i < _currentTasksList.Count; i++)
             {
-                Console.WriteLine(i + 1 + ": " + _currentTasksList[i].Title);
+                Console.WriteLine(i + 1 + ": " + _currentTasksList[i].ToString());
             }
             Console.WriteLine("\n");
         }
@@ -93,7 +127,7 @@ internal class TaskService
             Console.WriteLine("Список выполненных задач:");
             for (var i = 0; i < _doneTasksList.Count; i++)
             {
-                Console.WriteLine(i + 1 + ": " + _doneTasksList[i].Title);
+                Console.WriteLine(i + 1 + ": " + _doneTasksList[i].ToString());
             }
             Console.WriteLine("\n");
         }
