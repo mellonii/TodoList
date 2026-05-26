@@ -2,7 +2,7 @@ namespace TodoList;
 
 internal class ChecklistTask : Task
 { 
-    private List<string> _subTasks = [];
+    private readonly List<string> _subTasks = [];
 
     public ChecklistTask(string title, List<string> subTasks) : base(title)
     {
@@ -11,8 +11,8 @@ internal class ChecklistTask : Task
 
     public override string ToString()
     {
-        string text = Title + "\n";
-        foreach (string subTask in _subTasks)
+        var text = Title + "\n";
+        foreach (var subTask in _subTasks)
         {
             text += "\t> " + subTask + "\n";
         }

@@ -15,7 +15,7 @@ internal class TaskService
                           0 - вернуться
                           """ + "\n");
         
-        int state = Convert.ToInt32(Console.ReadLine());
+        var state = Convert.ToInt32(Console.ReadLine());
         string title;
 
         switch (state)
@@ -32,7 +32,7 @@ internal class TaskService
                 Console.WriteLine("Введите дату в формате dd/mm/YYYY hh:mm:ss:");
                 try
                 {
-                    DateTime deadlineTime = DateTime.Parse("" + Console.ReadLine());
+                    var deadlineTime = DateTime.Parse("" + Console.ReadLine());
                     _currentTasksList.Add(new DeadlinedTask(title, deadlineTime));
                 }
                 catch
@@ -48,7 +48,7 @@ internal class TaskService
                 List<string> subTasks = [];
                 while (true)
                 {
-                    string subTask = "" + Console.ReadLine();
+                    var subTask = "" + Console.ReadLine();
                     if (subTask is "")
                     {
                         break;
@@ -135,7 +135,7 @@ internal class TaskService
             Console.WriteLine("Список текущих задач:");
             for (var i = 0; i < _currentTasksList.Count; i++)
             {
-                Console.WriteLine(i + 1 + ": " + _currentTasksList[i].ToString());
+                Console.WriteLine(i + 1 + ": " + _currentTasksList[i]);
             }
             Console.WriteLine("\n");
         }
@@ -145,7 +145,7 @@ internal class TaskService
             Console.WriteLine("Список выполненных задач:");
             for (var i = 0; i < _doneTasksList.Count; i++)
             {
-                Console.WriteLine(i + 1 + ": " + _doneTasksList[i].ToString());
+                Console.WriteLine(i + 1 + ": " + _doneTasksList[i]);
             }
             Console.WriteLine("\n");
         }
