@@ -1,4 +1,4 @@
-namespace TodoList;
+namespace TodoList.Models;
 
 internal class ChecklistTask : Task
 { 

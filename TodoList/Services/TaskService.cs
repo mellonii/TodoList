@@ -1,4 +1,7 @@
-namespace TodoList;
+using TodoList.Models;
+using Task = TodoList.Models.Task;
+
+namespace TodoList.Services;
 
 internal class TaskService
 {

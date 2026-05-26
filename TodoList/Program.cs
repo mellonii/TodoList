@@ -1,4 +1,6 @@
-﻿namespace TodoList;
+﻿using TodoList.Services;
+
+namespace TodoList;
 
 class Program
 {
