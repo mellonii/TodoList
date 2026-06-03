@@ -154,3 +154,6 @@ internal class TaskService
         }
     }
 }
+
+// try catch finally переписать
+// переписать int.tryParse
