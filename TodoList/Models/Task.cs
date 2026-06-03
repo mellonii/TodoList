@@ -2,7 +2,7 @@ namespace TodoList.Models;
 
 internal class Task
 {
-    public HashSet<string> Tags = [];
+    public readonly HashSet<string> Tags = [];
     public static int LastId = 0;
     public readonly string Title;
     
