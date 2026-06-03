@@ -214,7 +214,12 @@ internal class TaskService
         {
             Console.WriteLine("Задач с таким тегом нет");
         }
-        
+    }
+
+    public void GetStats()
+    {
+        var (total, completed, overdue) = _taskRepository.GetStats();
+        Console.WriteLine($"Всего задач: {total}, выполнено: {completed}, осталось: {overdue}");
     }
     
 }

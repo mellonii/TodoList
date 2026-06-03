@@ -21,6 +21,7 @@ class Program
                               5 - добавить теги
                               6 - удалить теги
                               7 - поиск по тегу
+                              8 - получить статистику
                               """ + "\n");
 
             if (!int.TryParse(Console.ReadLine(), out state))
@@ -58,6 +59,10 @@ class Program
                     taskService.FindByTag();
                     Console.ReadKey();
                     break;
+                case 8:
+                    taskService.GetStats();
+                    Console.ReadKey();
+                    break;
                 default:
                     Console.WriteLine("Такой операции не существует\n"); 
                     Console.ReadKey();
@@ -69,12 +74,3 @@ class Program
         } while (state != 1);
     }
 }
-
-// Цель: Сделать данные иммутабельными, использовать record и деконструкцию
-// -----------------------------TodoItem переписан как record (бонус: реализация Equals/GetHashCode из коробки для поиска дубликатов) 
-// -----------------------------При отметке IsDone используется with: items[index] = items[index] with { IsDone = true }; 
-// Добавлен метод в TodoManager, возвращающий статистику: (int Total, int Completed, int Overdue) GetStats()
-// В Main статистика принимается через деконструкцию: var (total, completed, overdue) = manager.GetStats();
-
-// Используется record и выражение with
-// Статистика возвращается в виде кортежа и деконструируется

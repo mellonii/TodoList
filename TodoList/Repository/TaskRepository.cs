@@ -109,5 +109,11 @@ class TaskRepository
         }
         return string.Join(", ", list);
     }
+
+    public (int, int, int) GetStats()
+    {
+        int total = GetDoneTasksCount() + GetCurrentTasksCount(), completed = GetDoneTasksCount(), overdue = GetCurrentTasksCount();
+        return (total, completed, overdue);
+    }
     
 }
