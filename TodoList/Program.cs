@@ -14,27 +14,32 @@ class Program
             taskService.ShowTasks();
             Console.WriteLine("""
                               Список доступных команд:
-                              0 - выход
-                              1 - добавить задачу
-                              2 - выполнить задачу
-                              3 - удалить задачу
+                              1 - выход
+                              2 - добавить задачу
+                              3 - выполнить задачу
+                              4 - удалить задачу
                               """ + "\n");
 
-            state = Convert.ToInt32(Console.ReadLine());
-
+            if (!int.TryParse(Console.ReadLine(), out state))
+            {
+                Console.WriteLine("Такой операции не существует\n");
+                Console.Clear();
+                continue;
+            }
+            
             switch (state)
             {
-                case 0:
-                    break;
                 case 1:
+                    break;
+                case 2:
                     taskService.AddTask();
                     Console.ReadKey();
                     break;
-                case 2:
+                case 3:
                     taskService.DoneTask();
                     Console.ReadKey();
                     break;
-                case 3:
+                case 4:
                     taskService.DeleteTask();
                     Console.ReadKey();
                     break;
@@ -46,7 +51,7 @@ class Program
 
             Console.Clear();
 
-        } while (state != 0);
+        } while (state != 1);
     }
 }
 
@@ -58,26 +63,3 @@ class Program
 
 // Используется record и выражение with
 // Статистика возвращается в виде кортежа и деконструируется
-
-
-
-
-
-// Цель: Оптимизировать хранение, обеспечить быстрый поиск по ID и работу с тегами
-// Внутри TodoManager (TaskService) List<TodoItem> заменен на Dictionary<int, TodoItem>
-// ID генерируется автоматически (инкремент)
-// Добавлена система тегов: в TodoItem (Task) добавлено свойство HashSet<string> Tags
-// Поиск по ID и по тегам
-// Команда find для поиска задач, содержащих хотя бы один из введенных тегов (пересечение множеств)
-
-// Удаление и поиск по ID работают за O(1) благодаря Dictionary
-// К задаче можно привязать несколько тегов и осуществить по ним поиск
-
-
-
-
-
-// TaskRepository класс в отдельной папке, хранит  словарь с Dictionary<int, TodoItem>
-// метод Add принимает генерик и принимает Task
-// GetById FindByTag там
-// вынести туда задачи и все кроме выводов и вводов

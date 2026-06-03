@@ -1,12 +1,12 @@
 using TodoList.Models;
 using Task = TodoList.Models.Task;
+using TaskRepository = TodoList.Repository.TaskRepository;
 
 namespace TodoList.Services;
 
 internal class TaskService
 {
-    private readonly List<Task> _currentTasksList = [];
-    private readonly List<Task> _doneTasksList = [];
+    private readonly TaskRepository _taskRepository = new();
     
     public void AddTask()
     {
@@ -17,8 +17,13 @@ internal class TaskService
                           3 - с подзадачами
                           0 - вернуться
                           """ + "\n");
+
+        if (!int.TryParse(Console.ReadLine(), out var state))
+        {
+            Console.WriteLine("Такой операции не существует\n");
+            return;
+        }
         
-        var state = Convert.ToInt32(Console.ReadLine());
         string title;
 
         switch (state)
@@ -27,7 +32,8 @@ internal class TaskService
                 return;
             case 1: 
                 Console.WriteLine("Введите описание задачи:");
-                _currentTasksList.Add(new Task("" + Console.ReadLine()));
+                title = "" + Console.ReadLine();
+                _taskRepository.Add(new Task(title));
                 break;
             case 2:
                 Console.WriteLine("Введите описание задачи:");
@@ -36,7 +42,7 @@ internal class TaskService
                 try
                 {
                     var deadlineTime = DateTime.Parse("" + Console.ReadLine());
-                    _currentTasksList.Add(new DeadlinedTask(title, deadlineTime));
+                    _taskRepository.Add(new DeadlinedTask(title, deadlineTime));
                 }
                 catch
                 {
@@ -58,7 +64,7 @@ internal class TaskService
                     }
                     subTasks.Add(subTask);
                 }
-                _currentTasksList.Add(new ChecklistTask(title, subTasks));
+                _taskRepository.Add(new ChecklistTask(title,  subTasks));
                 break;
             default:
                 Console.WriteLine("Такой операции не существует\n"); 
@@ -69,7 +75,7 @@ internal class TaskService
 
     public void DoneTask()
     {
-        if (_currentTasksList.Count == 0)
+        if (_taskRepository.GetCurrentTasksCount() == 0)
         {
             Console.WriteLine("Список задач пуст\n");
             return;
@@ -77,23 +83,12 @@ internal class TaskService
         
         Console.WriteLine("Введите номер выполненной задачи:");
 
-        try
+        if (int.TryParse(Console.ReadLine(), out var index))
         {
-            var index = Convert.ToInt32(Console.ReadLine()) - 1;
-            
-            if (index >= 0 && index < _currentTasksList.Count)
-            {
-                _doneTasksList.Add(_currentTasksList[index]);
-                _currentTasksList[index].IsDone = true;
-                _currentTasksList.RemoveAt(index);
-                Console.WriteLine("Таска выполнена\n");
-            }
-            else
-            {
-                Console.WriteLine("Такой задачи не существует\n");
-            }
+            _taskRepository.DoneCurrentTask(index);
+            Console.WriteLine("Таска выполнена\n");
         }
-        catch
+        else
         {
             Console.WriteLine("Такой задачи не существует\n");
         }
@@ -102,29 +97,20 @@ internal class TaskService
     
     public void DeleteTask()
     {
-        if (_doneTasksList.Count == 0)
+        if (_taskRepository.GetDoneTasksCount() == 0)
         {
             Console.WriteLine("Список выполненных задач пуст\n");
             return;
         }
         
         Console.WriteLine("Введите номер выполненной задачи:");
-
-        try
+        
+        if (int.TryParse(Console.ReadLine(), out var index))
         {
-            var index = Convert.ToInt32(Console.ReadLine()) - 1;
-            
-            if (index >= 0 && index < _doneTasksList.Count)
-            {
-                _doneTasksList.RemoveAt(index);
-                Console.WriteLine("Таска удалена\n");
-            }
-            else
-            {
-                Console.WriteLine("Такой задачи не существует\n");
-            }
+            _taskRepository.DeleteDoneTask(index);
+            Console.WriteLine("Таска удалена\n");
         }
-        catch
+        else
         {
             Console.WriteLine("Такой задачи не существует\n");
         }
@@ -133,27 +119,18 @@ internal class TaskService
 
     public void ShowTasks()
     {
-        if (_currentTasksList.Count != 0)
+        if (_taskRepository.GetCurrentTasksCount() != 0)
         {
             Console.WriteLine("Список текущих задач:");
-            for (var i = 0; i < _currentTasksList.Count; i++)
-            {
-                Console.WriteLine(i + 1 + ": " + _currentTasksList[i]);
-            }
+            Console.WriteLine(_taskRepository.GetCurrentTasksList());
             Console.WriteLine("\n");
         }
 
-        if (_doneTasksList.Count != 0)
+        if (_taskRepository.GetDoneTasksCount() != 0)
         {
             Console.WriteLine("Список выполненных задач:");
-            for (var i = 0; i < _doneTasksList.Count; i++)
-            {
-                Console.WriteLine(i + 1 + ": " + _doneTasksList[i]);
-            }
+            Console.WriteLine(_taskRepository.GetDoneTasksList());
             Console.WriteLine("\n");
         }
     }
 }
-
-// try catch finally переписать
-// переписать int.tryParse

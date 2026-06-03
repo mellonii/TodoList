@@ -2,7 +2,7 @@ namespace TodoList.Models;
 
 internal class ChecklistTask : Task
 { 
-    private readonly List<string> _subTasks = [];
+    private readonly List<string> _subTasks;
 
     public ChecklistTask(string title, List<string> subTasks) : base(title)
     {

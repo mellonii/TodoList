@@ -2,7 +2,7 @@ namespace TodoList.Models;
 
 internal class Task
 {
-    private static int _lastId = 0;
+    public static int LastId = 0;
     private int _id;
     protected readonly string Title;
     public bool IsDone = false;
@@ -10,8 +10,8 @@ internal class Task
 
     public Task(string title)
     {
-        _id = _lastId;
-        _lastId++;
+        _id = LastId;
+        LastId++;
         Title = title;
         _createdAt = DateTime.Now;
     }
