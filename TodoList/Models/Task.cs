@@ -2,11 +2,14 @@ namespace TodoList.Models;
 
 internal class Task
 {
+    public HashSet<string> Tags = [];
     public static int LastId = 0;
+    public readonly string Title;
+    
     private int _id;
-    protected readonly string Title;
-    public bool IsDone = false;
     private DateTime _createdAt;
+    
+    public bool IsDone = false;
 
     public Task(string title)
     {
@@ -18,6 +21,13 @@ internal class Task
     
     public override string ToString()
     {
-        return Title;
+        if (Tags.Count == 0)
+        {
+            return Title;
+        }
+        else
+        {
+            return $"{Title} ({string.Join(", ", Tags)})";
+        }
     }
 }

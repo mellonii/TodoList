@@ -11,7 +11,7 @@ internal class ChecklistTask : Task
 
     public override string ToString()
     {
-        var text = Title + "\n";
+        var text = base.ToString() + "\n";
         foreach (var subTask in _subTasks)
         {
             text += "\t> " + subTask + "\n";

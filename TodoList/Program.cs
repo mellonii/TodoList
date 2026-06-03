@@ -18,6 +18,9 @@ class Program
                               2 - добавить задачу
                               3 - выполнить задачу
                               4 - удалить задачу
+                              5 - добавить теги
+                              6 - удалить теги
+                              7 - поиск по тегу
                               """ + "\n");
 
             if (!int.TryParse(Console.ReadLine(), out state))
@@ -41,6 +44,18 @@ class Program
                     break;
                 case 4:
                     taskService.DeleteTask();
+                    Console.ReadKey();
+                    break;
+                case 5:
+                    taskService.AddTags();
+                    Console.ReadKey();
+                    break;
+                case 6:
+                    taskService.DeleteTags();
+                    Console.ReadKey();
+                    break;
+                case 7:
+                    taskService.FindByTag();
                     Console.ReadKey();
                     break;
                 default:

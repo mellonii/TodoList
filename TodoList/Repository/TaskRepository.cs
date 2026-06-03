@@ -4,8 +4,8 @@ namespace TodoList.Repository;
 
 class TaskRepository
 {
-    private Dictionary<int, Task> _currentTasksList = new();
-    private Dictionary<int, Task> _doneTasksList = new();
+    private readonly Dictionary<int, Task> _currentTasksList = new();
+    private readonly Dictionary<int, Task> _doneTasksList = new();
 
     public void Add<T>(T task) where T: Task
     {
@@ -15,18 +15,18 @@ class TaskRepository
     public int GetCurrentTasksCount() => _currentTasksList.Count;
     public int GetDoneTasksCount() => _doneTasksList.Count;
 
-    public void DoneCurrentTask(int index)
+    public void DoneCurrentTask(int id)
     {
-        _doneTasksList.Add(index, _currentTasksList[index]);
-        _currentTasksList[index].IsDone = true;
-        _currentTasksList.Remove(index);
+        _doneTasksList.Add(id, _currentTasksList[id]);
+        _currentTasksList[id].IsDone = true;
+        _currentTasksList.Remove(id);
     }
 
-    public void DeleteDoneTask(int index)
+    public void DeleteDoneTask(int id)
     {
-        if (_doneTasksList.ContainsKey(index))
+        if (_doneTasksList.ContainsKey(id))
         {
-            _doneTasksList.Remove(index);
+            _doneTasksList.Remove(id);
         }
         else
         {
@@ -50,23 +50,64 @@ class TaskRepository
         foreach (var task in _doneTasksList)
         {
             title += Convert.ToString(task.Key) + ": " + task.Value + "\n";
-        }
+        }                                                                                      
         return title;
     }
+
+    public Task? GetByIdOrDefault(int id)
+    {
+        if (_currentTasksList.ContainsKey(id))
+        {
+            return _currentTasksList[id];
+        }
+        else if (_doneTasksList.ContainsKey(id))
+        {
+            return _doneTasksList[id];
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public void AddTags(Task task, string text)
+    {
+        var tagList = text.Split(',');
+        foreach (var tag in tagList)
+        {
+            task.Tags.Add(tag.Trim());
+        }
+    }
+
+    public void DeleteTags(Task task, string text)
+    {
+        var tagList = text.Split(',');
+        foreach (var tag in tagList)
+        {
+            task.Tags.Remove(tag.Trim());
+        }
+    }
+
+    public int GetTagCount(Task task)
+    {
+        return task.Tags.Count;
+    }
+    
+    public string? FindByTag(string tag)
+    {
+        List<string> list = [];
+        foreach (var task in _currentTasksList)
+        {
+            if (task.Value.Tags.Contains(tag))
+            {
+                list.Add(task.Value.Title);
+            }
+        }
+        if (list.Count == 0)
+        {
+            return null;
+        }
+        return string.Join(", ", list);
+    }
+    
 }
-
-// Цель: Оптимизировать хранение, обеспечить быстрый поиск по ID и работу с тегами
-// Внутри TodoManager (TaskService) List<TodoItem> заменен на Dictionary<int, TodoItem>
-// ID генерируется автоматически (инкремент)
-// Добавлена система тегов: в TodoItem (Task) добавлено свойство HashSet<string> Tags
-// Поиск по ID и по тегам
-// Команда find для поиска задач, содержащих хотя бы один из введенных тегов (пересечение множеств)
-
-// Удаление и поиск по ID работают за O(1) благодаря Dictionary
-// К задаче можно привязать несколько тегов и осуществить по ним поиск
-
-
-// TaskRepository класс в отдельной папке, хранит  словарь с Dictionary<int, TodoItem>
-// метод Add принимает генерик и принимает Task
-// GetById FindByTag там
-// вынести туда задачи и все кроме выводов и вводов

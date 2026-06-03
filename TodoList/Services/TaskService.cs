@@ -133,4 +133,88 @@ internal class TaskService
             Console.WriteLine("\n");
         }
     }
+
+    public void AddTags()
+    {
+        Console.WriteLine("Введите номер задачи, которой хотите добавить тег");
+        if (!int.TryParse(Console.ReadLine(), out var id))
+        {
+            Console.WriteLine("Такой задачи не существует\n");
+            return;
+        }
+
+        var task = _taskRepository.GetByIdOrDefault(id);
+        if (task is not null)
+        {
+            Console.WriteLine("Введите список тегов через запятую");
+            var tags = "" + Console.ReadLine();
+            if (tags == "")
+            {
+                Console.WriteLine("Вы ввели пустую строку");
+                return;
+            }
+            _taskRepository.AddTags(task, tags);
+            Console.WriteLine("Теги добавлены\n");
+        }
+        else
+        {
+            Console.WriteLine("Такой задачи не существует\n");
+        }
+    }
+
+    public void DeleteTags()
+    {
+        Console.WriteLine("Введите номер задачи, у которой хотите удалить тег");
+        if (!int.TryParse(Console.ReadLine(), out var id))
+        {
+            Console.WriteLine("Такой задачи не существует\n");
+            return;
+        }
+
+        var task = _taskRepository.GetByIdOrDefault(id);
+        
+        if (task is not null)
+        {
+            if (_taskRepository.GetTagCount(task) == 0)
+            {
+                Console.WriteLine("У данной задачи нет тегов\n");
+                return;
+            }
+            Console.WriteLine("Введите список тегов на удаление через запятую");
+            var tags = "" + Console.ReadLine();
+            if (tags == "")
+            {
+                Console.WriteLine("Вы ввели пустую строку");
+                return;
+            }
+            _taskRepository.DeleteTags(task, tags);
+            Console.WriteLine("Теги удалены\n");
+        }
+        else
+        {
+            Console.WriteLine("Такой задачи не существует\n");
+        }
+    }
+
+    public void FindByTag()
+    {
+        Console.WriteLine("Введите тег");
+        var tag = "" + Console.ReadLine();
+        if (tag == "")
+        {
+            Console.WriteLine("Вы ввели пустую строку");
+            return;
+        }
+        var text = _taskRepository.FindByTag(tag);
+        if (text is not null)
+        {
+            Console.WriteLine(text);
+        }
+        else
+        {
+            Console.WriteLine("Задач с таким тегом нет");
+        }
+        
+    }
+    
 }

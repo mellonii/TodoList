@@ -11,6 +11,6 @@ internal class DeadlinedTask : Task
     
     public override string ToString()
     {
-        return Title + " - " + _deadlineTime.ToString("dd.MM.yyyy HH:mm:ss");
+        return base.ToString() + " - " + _deadlineTime.ToString("dd.MM.yyyy HH:mm:ss");
     }
 }
