@@ -3,8 +3,8 @@ namespace TodoList.Models;
 internal class Task
 {
     public readonly HashSet<string> Tags = [];
-    public static int LastId = 0;
-    public static int CurrentTasksCount = 0;
+    public static int LastId;
+    public static int CurrentTasksCount;
     public static int DoneTasksCount = 0;
     public readonly string Title;
     
@@ -28,9 +28,6 @@ internal class Task
         {
             return Title;
         }
-        else
-        {
-            return $"{Title} ({string.Join(", ", Tags)})";
-        }
+        return $"{Title} ({string.Join(", ", Tags)})";
     }
 }

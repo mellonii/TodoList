@@ -23,57 +23,70 @@ internal class TaskService
             Console.WriteLine("Такой операции не существует\n");
             return;
         }
-        
-        string title;
 
         switch (state)
         {
             case 0:
                 return;
-            case 1: 
-                Console.WriteLine("Введите описание задачи:");
-                title = "" + Console.ReadLine();
-                _taskRepository.Add(new Task(title));
+            case 1:
+                AddSimpleTask();
                 break;
             case 2:
-                Console.WriteLine("Введите описание задачи:");
-                title = "" + Console.ReadLine();
-                while (true)
-                {
-                    Console.WriteLine("Введите дату в формате dd/mm/YYYY hh:mm:ss");
-                    try
-                    {
-                        var deadlineTime = DateTimeOffset.Parse("" + Console.ReadLine());
-                        _taskRepository.Add(new DeadlinedTask(title, deadlineTime));
-                        break;
-                    }
-                    catch
-                    {
-                        Console.WriteLine("Неправильно введена дата");
-                    }
-                }
+                AddDeadlinedTask();
                 break;
             case 3:
-                Console.WriteLine("Введите описание задачи:");
-                title = "" + Console.ReadLine();
-                Console.WriteLine("Введи подзадачи:");
-                List<string> subTasks = [];
-                while (true)
-                {
-                    var subTask = "" + Console.ReadLine();
-                    if (subTask.Trim() is "")
-                    {
-                        break;
-                    }
-                    subTasks.Add(subTask);
-                }
-                _taskRepository.Add(new ChecklistTask(title,  subTasks));
+                AddChecklistTask();
                 break;
             default:
                 Console.WriteLine("Такой операции не существует\n"); 
                 return;
         }
         Console.WriteLine("Таска добавлена\n");
+    }
+
+    private void AddSimpleTask()
+    {
+        Console.WriteLine("Введите описание задачи:");
+        var title = "" + Console.ReadLine();
+        _taskRepository.Add(new Task(title));
+    }
+
+    private void AddDeadlinedTask()
+    {
+        Console.WriteLine("Введите описание задачи:");
+        var title = "" + Console.ReadLine();
+        while (true)
+        {
+            Console.WriteLine("Введите дату в формате dd/mm/YYYY hh:mm:ss");
+            try
+            {
+                var deadlineTime = DateTimeOffset.Parse("" + Console.ReadLine());
+                _taskRepository.Add(new DeadlinedTask(title, deadlineTime));
+                break;
+            }
+            catch
+            {
+                Console.WriteLine("Неправильно введена дата");
+            }
+        }
+    }
+
+    private void AddChecklistTask()
+    {
+        Console.WriteLine("Введите описание задачи:");
+        var title = "" + Console.ReadLine();
+        Console.WriteLine("Введи подзадачи:");
+        List<string> subTasks = [];
+        while (true)
+        {
+            var subTask = "" + Console.ReadLine();
+            if (subTask.Trim() is "")
+            {
+                break;
+            }
+            subTasks.Add(subTask);
+        }
+        _taskRepository.Add(new ChecklistTask(title,  subTasks));
     }
 
     public void DoneTask()
