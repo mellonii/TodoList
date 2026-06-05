@@ -4,29 +4,36 @@ namespace TodoList.Repository;
 
 class TaskRepository
 {
-    private readonly Dictionary<int, Task> _currentTasksList = new();
-    private readonly Dictionary<int, Task> _doneTasksList = new();
+    private readonly Dictionary<int, Task> _taskList = new();
 
     public void Add<T>(T task) where T: Task
     {
-        _currentTasksList.Add(Task.LastId - 1, task);
+        _taskList.Add(Task.LastId - 1, task);
     }
 
-    public int GetCurrentTasksCount() => _currentTasksList.Count;
-    public int GetDoneTasksCount() => _doneTasksList.Count;
+    public int GetCurrentTasksCount() => Task.CurrentTasksCount;
+    public int GetDoneTasksCount() => Task.DoneTasksCount;
 
     public void DoneCurrentTask(int id)
     {
-        _doneTasksList.Add(id, _currentTasksList[id]);
-        _currentTasksList[id].IsDone = true;
-        _currentTasksList.Remove(id);
+        if (_taskList.ContainsKey(id))
+        {
+            Task.CurrentTasksCount--;
+            Task.DoneTasksCount++;
+            _taskList[id].IsDone = true;
+        }
+        else
+        {
+            throw new Exception("Нет такой задачи");
+        }
     }
 
     public void DeleteDoneTask(int id)
     {
-        if (_doneTasksList.ContainsKey(id))
+        if (_taskList.ContainsKey(id))
         {
-            _doneTasksList.Remove(id);
+            Task.DoneTasksCount--;
+            _taskList.Remove(id);
         }
         else
         {
@@ -37,9 +44,12 @@ class TaskRepository
     public string GetCurrentTasksList()
     {
         var title = "";
-        foreach (var task in _currentTasksList)
+        foreach (var task in _taskList)
         {
-            title += Convert.ToString(task.Key) + ": " + task.Value + "\n";
+            if (!task.Value.IsDone)
+            {
+                title += Convert.ToString(task.Key) + ": " + task.Value + "\n";
+            }
         }
         return title;
     }
@@ -47,22 +57,21 @@ class TaskRepository
     public string GetDoneTasksList()
     {
         var title = "";
-        foreach (var task in _doneTasksList)
+        foreach (var task in _taskList)
         {
-            title += Convert.ToString(task.Key) + ": " + task.Value + "\n";
+            if (task.Value.IsDone)
+            {
+                title += Convert.ToString(task.Key) + ": " + task.Value + "\n";
+            }
         }                                                                                      
         return title;
     }
 
     public Task? GetByIdOrDefault(int id)
     {
-        if (_currentTasksList.ContainsKey(id))
+        if (_taskList.ContainsKey(id))
         {
-            return _currentTasksList[id];
-        }
-        else if (_doneTasksList.ContainsKey(id))
-        {
-            return _doneTasksList[id];
+            return _taskList[id];
         }
         else
         {
@@ -96,9 +105,9 @@ class TaskRepository
     public string? FindByTag(string tag)
     {
         List<string> list = [];
-        foreach (var task in _currentTasksList)
+        foreach (var task in _taskList)
         {
-            if (task.Value.Tags.Contains(tag))
+            if (task.Value.Tags.Contains(tag) && !task.Value.IsDone)
             {
                 list.Add(task.Value.Title);
             }

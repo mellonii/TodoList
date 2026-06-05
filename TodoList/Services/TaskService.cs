@@ -88,12 +88,19 @@ internal class TaskService
 
         if (int.TryParse(Console.ReadLine(), out var index))
         {
-            _taskRepository.DoneCurrentTask(index);
-            Console.WriteLine("Таска выполнена\n");
+            try
+            {
+                _taskRepository.DoneCurrentTask(index);
+                Console.WriteLine("Таска выполнена\n");
+            }
+            catch
+            {
+                Console.WriteLine("Такой задачи не существует\n");
+            }
         }
         else
         {
-            Console.WriteLine("Такой задачи не существует\n");
+            Console.WriteLine("Неправильно введен номер задачи\n");
         }
         
     }
@@ -110,12 +117,20 @@ internal class TaskService
         
         if (int.TryParse(Console.ReadLine(), out var index))
         {
-            _taskRepository.DeleteDoneTask(index);
-            Console.WriteLine("Таска удалена\n");
+            try
+            {
+                _taskRepository.DeleteDoneTask(index);
+                Console.WriteLine("Таска удалена\n");
+            }
+            catch
+            {
+                Console.WriteLine("Такой задачи не существует\n");
+            }
+            
         }
         else
         {
-            Console.WriteLine("Такой задачи не существует\n");
+            Console.WriteLine("Неправильно введен номер задачи\n");
         }
         
     }
