@@ -7,7 +7,7 @@ internal class Task
     public readonly string Title;
     
     private int _id;
-    private DateTime _createdAt;
+    private DateTimeOffset _createdAt;
     
     public bool IsDone = false;
 
@@ -16,7 +16,7 @@ internal class Task
         _id = LastId;
         LastId++;
         Title = title;
-        _createdAt = DateTime.Now;
+        _createdAt = DateTimeOffset.Now;
     }
     
     public override string ToString()

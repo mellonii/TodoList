@@ -38,16 +38,19 @@ internal class TaskService
             case 2:
                 Console.WriteLine("Введите описание задачи:");
                 title = "" + Console.ReadLine();
-                Console.WriteLine("Введите дату в формате dd/mm/YYYY hh:mm:ss:");
-                try
+                while (true)
                 {
-                    var deadlineTime = DateTime.Parse("" + Console.ReadLine());
-                    _taskRepository.Add(new DeadlinedTask(title, deadlineTime));
-                }
-                catch
-                {
-                    Console.WriteLine("Неправильно введена дата");
-                    return;
+                    Console.WriteLine("Введите дату в формате dd/mm/YYYY hh:mm:ss");
+                    try
+                    {
+                        var deadlineTime = DateTimeOffset.Parse("" + Console.ReadLine());
+                        _taskRepository.Add(new DeadlinedTask(title, deadlineTime));
+                        break;
+                    }
+                    catch
+                    {
+                        Console.WriteLine("Неправильно введена дата");
+                    }
                 }
                 break;
             case 3:
