@@ -6,9 +6,8 @@ class Program
 {
     private static void Main()
     {
-        Console.ForegroundColor = ConsoleColor.Magenta;
-        Console.BackgroundColor = ConsoleColor.White;
-        Console.Title = "TodoList <3";
+        Console.ForegroundColor = ConsoleColor.DarkMagenta;
+        Console.Clear();
         
         int state;
         var taskService = new TaskService();
