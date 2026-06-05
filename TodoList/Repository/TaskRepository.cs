@@ -30,7 +30,7 @@ class TaskRepository
 
     public void DeleteDoneTask(int id)
     {
-        if (_taskList.ContainsKey(id))
+        if (_taskList.ContainsKey(id) && _taskList[id].IsDone)
         {
             Task.DoneTasksCount--;
             _taskList.Remove(id);
