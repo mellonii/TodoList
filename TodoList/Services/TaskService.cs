@@ -61,7 +61,7 @@ internal class TaskService
                 while (true)
                 {
                     var subTask = "" + Console.ReadLine();
-                    if (subTask is "")
+                    if (subTask.Trim() is "")
                     {
                         break;
                     }
