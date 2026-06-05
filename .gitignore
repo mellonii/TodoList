@@ -1,0 +1,94 @@
+# Visual Studio / .NET core
+## Ignore compiled files
+bin/
+obj/
+out/
+lib/
+packages/
+*.exe
+*.dll
+*.so
+*.pdb
+*.mdb
+*.user
+*.suo
+*.sln.docstates
+*.pidb
+*.dbmdl
+*.nupkg
+*.nuget.props
+*.nuget.targets
+
+## Rider / JetBrains
+.idea/
+*.sln.iml
+
+## Visual Studio Code
+.vscode/
+*.code-workspace
+
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.ide
+*.csproj.user
+
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+## Logs
+*.log
+*.logs
+*.htm
+*.html
+logs/
+
+## Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+*.coveragejson
+
+## Dotnet tools
+.tools/
+tools/
+
+## EF Core Migrations backup
+*.MigrationBackup/
+
+## NuGet
+packages/
+*.nupkg
+*.snupkg
+.nuget/
+nuget.exe
+
+## Node.js (if you use JavaScript tools)
+node_modules/
+npm-debug.log
+package-lock.json
+
+## Windows
+Thumbs.db
+desktop.ini
+
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+## Linux
+*~
+.directory
