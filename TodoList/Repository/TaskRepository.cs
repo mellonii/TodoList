@@ -5,7 +5,7 @@ namespace TodoList.Repository;
 class TaskRepository
 {
     private readonly Dictionary<int, Task> _taskList = new();
-
+    
     public void Add<T>(T task) where T: Task
     {
         _taskList.Add(Task.LastId - 1, task);
@@ -14,9 +14,18 @@ class TaskRepository
     public int GetCurrentTasksCount() => Task.CurrentTasksCount;
     public int GetDoneTasksCount() => Task.DoneTasksCount;
 
-    public void DoneCurrentTask(int id)
+    public Task? GetTaskById(int id)
     {
         if (_taskList.ContainsKey(id))
+        {
+            return _taskList[id];
+        }
+        return null;
+    }
+
+    public void DoneCurrentTask(int id)
+    {
+        if (_taskList.ContainsKey(id) && !_taskList[id].IsDone)
         {
             Task.CurrentTasksCount--;
             Task.DoneTasksCount++;
@@ -52,7 +61,7 @@ class TaskRepository
             }
         }
         return title;
-    }
+    } 
     
     public string GetDoneTasksList()
     {

@@ -4,9 +4,26 @@ using TaskRepository = TodoList.Repository.TaskRepository;
 
 namespace TodoList.Services;
 
+// В TaskService добавлено событие event Action<Task> TaskCompleted.
+// Метод MarkDone генерирует это событие.
+// В Main подписка на событие лямбдой: вывод зеленым цветом "Ура! Задача [Title] выполнена!".
+// Добавлен метод Find(Func<Task, bool> predicate), позволяющий пользователю вводить произвольный критерий (пока просто эмуляция: выбор из предзаданных лямбд).
+
+// Критерии приемки:
+// При выполнении задачи срабатывает событие.
+// Метод Find принимает Func или Predicate.
+
 internal class TaskService
 {
     private readonly TaskRepository _taskRepository = new();
+    
+    public delegate void TaskCompleted(string message);
+    public event TaskCompleted? Notify;
+    
+    public void MarkDone(Task task)
+    {
+        Notify?.Invoke($"Ура! Задача {task.Title} выполнена!");
+    }
     
     public void AddTask()
     {
@@ -104,7 +121,7 @@ internal class TaskService
             try
             {
                 _taskRepository.DoneCurrentTask(index);
-                Console.WriteLine("Таска выполнена\n");
+                MarkDone(_taskRepository.GetTaskById(index));
             }
             catch
             {

@@ -4,6 +4,15 @@ namespace TodoList;
 
 class Program
 {
+    private static void DisplayMessage(string message) => PrintGreen(message);
+    private static void PrintGreen(string message)
+    {
+        var originalColor = Console.ForegroundColor;
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine(message);
+        Console.ForegroundColor = originalColor;
+    }
+    
     private static void Main()
     {
         Console.ForegroundColor = ConsoleColor.DarkMagenta;
@@ -11,6 +20,7 @@ class Program
         
         int state;
         var taskService = new TaskService();
+        taskService.Notify += DisplayMessage;
 
         do
         {
