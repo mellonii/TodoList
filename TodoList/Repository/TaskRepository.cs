@@ -1,4 +1,5 @@
 using TodoList.Models;
+using TodoList.Exceptions;
 
 namespace TodoList.Repository;
 
@@ -14,18 +15,9 @@ class TaskRepository
     public int GetCurrentTasksCount() => Todo.CurrentTasksCount;
     public int GetDoneTasksCount() => Todo.DoneTasksCount;
 
-    public Todo? GetTaskById(int id)
-    {
-        if (_taskList.ContainsKey(id))
-        {
-            return _taskList[id];
-        }
-        return null;
-    }
-
     public void DoneCurrentTask(int id)
     {
-        if (_taskList.ContainsKey(id) && !_taskList[id].IsDone)
+        if (!_taskList[id].IsDone)
         {
             Todo.CurrentTasksCount--;
             Todo.DoneTasksCount++;
@@ -33,20 +25,20 @@ class TaskRepository
         }
         else
         {
-            throw new Exception("Нет такой задачи");
+            throw new TodoNotFoundException("Задачи с таким id среди текущих задач нет");
         }
     }
 
     public void DeleteDoneTask(int id)
     {
-        if (_taskList.ContainsKey(id) && _taskList[id].IsDone)
+        if (_taskList[id].IsDone)
         {
             Todo.DoneTasksCount--;
             _taskList.Remove(id);
         }
         else
         {
-            throw new Exception("Нет такой задачи");
+            throw new TodoNotFoundException("Задачи с таким id среди выполненных задач нет");
         }
     }
     
@@ -82,10 +74,7 @@ class TaskRepository
         {
             return _taskList[id];
         }
-        else
-        {
-            return null;
-        }
+        return null;
     }
 
     public void AddTags(Todo todo, string text)

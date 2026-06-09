@@ -1,9 +1,26 @@
 ﻿using TodoList.Services;
+using TodoList.Exceptions;
 
 namespace TodoList;
 
 class Program
 {
+    private static void HandleErrors(Action func)
+    {
+        try
+        {
+            func();
+        }
+        catch (InvalidTodoDataException ex)
+        {
+            Console.WriteLine($"Ошибка: {ex.Message}");
+        }
+        catch (TodoNotFoundException ex)
+        {
+            Console.WriteLine($"Ошибка: {ex.Message}");
+        }
+    }
+    
     private static void Main()
     {
         Console.ForegroundColor = ConsoleColor.DarkMagenta;
@@ -39,23 +56,23 @@ class Program
                 case 1:
                     break;
                 case 2:
-                    taskService.AddTask();
+                    HandleErrors(taskService.AddTask);
                     Console.ReadKey();
                     break;
                 case 3:
-                    taskService.DoneTask();
+                    HandleErrors(taskService.DoneTask);
                     Console.ReadKey();
                     break;
                 case 4:
-                    taskService.DeleteTask();
+                    HandleErrors(taskService.DeleteTask);
                     Console.ReadKey();
                     break;
                 case 5:
-                    taskService.AddTags();
+                    HandleErrors(taskService.AddTags);
                     Console.ReadKey();
                     break;
                 case 6:
-                    taskService.DeleteTags();
+                    HandleErrors(taskService.DeleteTags);
                     Console.ReadKey();
                     break;
                 case 7:

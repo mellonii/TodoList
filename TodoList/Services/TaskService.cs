@@ -1,4 +1,5 @@
 using TodoList.Models;
+using TodoList.Exceptions;
 using TaskRepository = TodoList.Repository.TaskRepository;
 
 namespace TodoList.Services;
@@ -62,6 +63,10 @@ internal class TaskService
     {
         Console.WriteLine("Введите описание задачи:");
         var title = "" + Console.ReadLine();
+        if (title is "")
+        {
+            throw new InvalidTodoDataException("Была введена пустая строка");
+        }
         _taskRepository.Add(new Todo(title));
     }
 
@@ -69,18 +74,21 @@ internal class TaskService
     {
         Console.WriteLine("Введите описание задачи:");
         var title = "" + Console.ReadLine();
+        if (title is "")
+        {
+            throw new InvalidTodoDataException("Была введена пустая строка");
+        }
         while (true)
         {
             Console.WriteLine("Введите дату в формате dd/mm/YYYY hh:mm:ss");
-            try
-            {
-                var deadlineTime = DateTimeOffset.Parse("" + Console.ReadLine());
-                _taskRepository.Add(new DeadlinedTask(title, deadlineTime));
-                break;
-            }
-            catch
+            if (!DateTimeOffset.TryParse("" + Console.ReadLine(), out var deadlineTime))
             {
                 Console.WriteLine("Неправильно введена дата");
+            }
+            else
+            {
+                _taskRepository.Add(new DeadlinedTask(title, deadlineTime));
+                break;
             }
         }
     }
@@ -89,6 +97,10 @@ internal class TaskService
     {
         Console.WriteLine("Введите описание задачи:");
         var title = "" + Console.ReadLine();
+        if (title is "")
+        {
+            throw new InvalidTodoDataException("Была введена пустая строка");
+        }
         Console.WriteLine("Введи подзадачи:");
         List<string> subTasks = [];
         while (true)
@@ -113,22 +125,17 @@ internal class TaskService
         
         Console.WriteLine("Введите номер выполненной задачи:");
 
-        if (int.TryParse(Console.ReadLine(), out var index))
+        if (int.TryParse(Console.ReadLine(), out var id))
         {
-            try
+            var task = _taskRepository.GetByIdOrDefault(id);
+            if (task is not null)
             {
-                _taskRepository.DoneCurrentTask(index);
-                _notify.Invoke($"Задача {_taskRepository.GetTaskById(index).Title} выполнена!!", ConsoleColor.Green);
+                _taskRepository.DoneCurrentTask(id);
+                _notify.Invoke($"Задача {task.Title} выполнена!!", ConsoleColor.Green);
             }
-            catch
-            {
-                Console.WriteLine("Такой задачи не существует\n");
-            }
+            else throw new TodoNotFoundException("Задачи с таким id нет");
         }
-        else
-        {
-            Console.WriteLine("Неправильно введен номер задачи\n");
-        }
+        else throw new InvalidTodoDataException("Неправильно введен id задачи");
     }
     
     public void DeleteTask()
@@ -141,24 +148,17 @@ internal class TaskService
         
         Console.WriteLine("Введите номер выполненной задачи:");
         
-        if (int.TryParse(Console.ReadLine(), out var index))
+        if (int.TryParse(Console.ReadLine(), out var id))
         {
-            try
+            var task = _taskRepository.GetByIdOrDefault(id);
+            if (task is not null)
             {
-                _notify.Invoke($"Задача {_taskRepository.GetTaskById(index).Title} удалена!!", ConsoleColor.Green);
-                _taskRepository.DeleteDoneTask(index);
+                _taskRepository.DeleteDoneTask(id);
+                _notify.Invoke($"Задача {task.Title} удалена!!", ConsoleColor.Green);
             }
-            catch
-            {
-                Console.WriteLine("Такой задачи не существует\n");
-            }
-            
+            else throw new TodoNotFoundException("Задачи с таким id нет");
         }
-        else
-        {
-            Console.WriteLine("Неправильно введен номер задачи\n");
-        }
-        
+        else throw new InvalidTodoDataException("Неправильно введен id задачи");
     }
 
     public void ShowTasks()
@@ -180,43 +180,40 @@ internal class TaskService
 
     public void AddTags()
     {
-        Console.WriteLine("Введите номер задачи, которой хотите добавить тег");
-        if (!int.TryParse(Console.ReadLine(), out var id))
+        if (_taskRepository.GetCurrentTasksCount() == 0 && _taskRepository.GetDoneTasksCount() == 0)
         {
-            Console.WriteLine("Такой задачи не существует\n");
+            Console.WriteLine("Список задач пуст\n");
             return;
         }
-
+        
+        Console.WriteLine("Введите номер задачи, которой хотите добавить тег");
+        if (!int.TryParse(Console.ReadLine(), out var id)) throw new TodoNotFoundException("Задачи с таким id нет");
+        
         var task = _taskRepository.GetByIdOrDefault(id);
         if (task is not null)
         {
             Console.WriteLine("Введите список тегов через запятую");
             var tags = "" + Console.ReadLine();
-            if (tags == "")
-            {
-                Console.WriteLine("Вы ввели пустую строку");
-                return;
-            }
+            if (tags == "") throw new InvalidTodoDataException("Была введена пустая строка");
+            
             _taskRepository.AddTags(task, tags);
             Console.WriteLine("Теги добавлены\n");
         }
-        else
-        {
-            Console.WriteLine("Такой задачи не существует\n");
-        }
+        else throw new TodoNotFoundException("Задачи с таким id нет");
     }
 
     public void DeleteTags()
     {
-        Console.WriteLine("Введите номер задачи, у которой хотите удалить тег");
-        if (!int.TryParse(Console.ReadLine(), out var id))
+        if (_taskRepository.GetCurrentTasksCount() == 0 && _taskRepository.GetDoneTasksCount() == 0)
         {
-            Console.WriteLine("Такой задачи не существует\n");
+            Console.WriteLine("Список выполненных задач пуст\n");
             return;
         }
+        
+        Console.WriteLine("Введите номер задачи, у которой хотите удалить тег");
+        if (!int.TryParse(Console.ReadLine(), out var id)) throw new TodoNotFoundException("Задачи с таким id нет");
 
         var task = _taskRepository.GetByIdOrDefault(id);
-        
         if (task is not null)
         {
             if (_taskRepository.GetTagCount(task) == 0)
@@ -226,29 +223,25 @@ internal class TaskService
             }
             Console.WriteLine("Введите список тегов на удаление через запятую");
             var tags = "" + Console.ReadLine();
-            if (tags == "")
-            {
-                Console.WriteLine("Вы ввели пустую строку");
-                return;
-            }
+            if (tags == "") throw new InvalidTodoDataException("Была введена пустая строка");
+            
             _taskRepository.DeleteTags(task, tags);
             Console.WriteLine("Теги удалены\n");
         }
-        else
-        {
-            Console.WriteLine("Такой задачи не существует\n");
-        }
+        else throw new TodoNotFoundException("Задачи с таким id нет");
     }
 
     public void FindByTag()
     {
-        Console.WriteLine("Введите тег");
-        var tag = "" + Console.ReadLine();
-        if (tag == "")
+        if (_taskRepository.GetCurrentTasksCount() == 0 && _taskRepository.GetDoneTasksCount() == 0)
         {
-            Console.WriteLine("Вы ввели пустую строку");
+            Console.WriteLine("Список задач пуст\n");
             return;
         }
+        
+        Console.WriteLine("Введите тег");
+        var tag = "" + Console.ReadLine();
+        if (tag == "") throw new InvalidTodoDataException("Была введена пустая строка");
         var text = _taskRepository.FindByTag(tag);
         if (text is not null)
         {
