@@ -4,7 +4,7 @@ namespace TodoList;
 
 class Program
 {
-    private static void DisplayMessage(string message) => PrintGreen(message);
+    private static void DisplayMessage(TodoList.Models.Task task) => PrintGreen($"Ура! Задача {task.Title} выполнена!");
     private static void PrintGreen(string message)
     {
         var originalColor = Console.ForegroundColor;
@@ -20,7 +20,7 @@ class Program
         
         int state;
         var taskService = new TaskService();
-        taskService.Notify += DisplayMessage;
+        taskService.TaskCompleted += DisplayMessage;
 
         do
         {
