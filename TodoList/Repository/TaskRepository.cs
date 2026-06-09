@@ -1,20 +1,20 @@
-using Task = TodoList.Models.Task;
+using TodoList.Models;
 
 namespace TodoList.Repository;
 
 class TaskRepository
 {
-    private readonly Dictionary<int, Task> _taskList = new();
+    private readonly Dictionary<int, Todo> _taskList = new();
     
-    public void Add<T>(T task) where T: Task
+    public void Add<T>(T task) where T: Todo
     {
-        _taskList.Add(Task.LastId - 1, task);
+        _taskList.Add(Todo.LastId - 1, task);
     }
 
-    public int GetCurrentTasksCount() => Task.CurrentTasksCount;
-    public int GetDoneTasksCount() => Task.DoneTasksCount;
+    public int GetCurrentTasksCount() => Todo.CurrentTasksCount;
+    public int GetDoneTasksCount() => Todo.DoneTasksCount;
 
-    public Task? GetTaskById(int id)
+    public Todo? GetTaskById(int id)
     {
         if (_taskList.ContainsKey(id))
         {
@@ -27,8 +27,8 @@ class TaskRepository
     {
         if (_taskList.ContainsKey(id) && !_taskList[id].IsDone)
         {
-            Task.CurrentTasksCount--;
-            Task.DoneTasksCount++;
+            Todo.CurrentTasksCount--;
+            Todo.DoneTasksCount++;
             _taskList[id].IsDone = true;
         }
         else
@@ -41,7 +41,7 @@ class TaskRepository
     {
         if (_taskList.ContainsKey(id) && _taskList[id].IsDone)
         {
-            Task.DoneTasksCount--;
+            Todo.DoneTasksCount--;
             _taskList.Remove(id);
         }
         else
@@ -76,7 +76,7 @@ class TaskRepository
         return title;
     }
 
-    public Task? GetByIdOrDefault(int id)
+    public Todo? GetByIdOrDefault(int id)
     {
         if (_taskList.ContainsKey(id))
         {
@@ -88,27 +88,27 @@ class TaskRepository
         }
     }
 
-    public void AddTags(Task task, string text)
+    public void AddTags(Todo todo, string text)
     {
         var tagList = text.Split(',');
         foreach (var tag in tagList)
         {
-            task.Tags.Add(tag.Trim());
+            todo.Tags.Add(tag.Trim());
         }
     }
 
-    public void DeleteTags(Task task, string text)
+    public void DeleteTags(Todo todo, string text)
     {
         var tagList = text.Split(',');
         foreach (var tag in tagList)
         {
-            task.Tags.Remove(tag.Trim());
+            todo.Tags.Remove(tag.Trim());
         }
     }
 
-    public int GetTagCount(Task task)
+    public int GetTagCount(Todo todo)
     {
-        return task.Tags.Count;
+        return todo.Tags.Count;
     }
     
     public string? FindByTag(string tag)

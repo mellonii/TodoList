@@ -1,6 +1,6 @@
 namespace TodoList.Models;
 
-internal class DeadlinedTask : Task
+internal class DeadlinedTask : Todo
 {
     private readonly DateTimeOffset _deadlineTime;
     

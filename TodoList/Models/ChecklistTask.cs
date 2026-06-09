@@ -1,6 +1,6 @@
 namespace TodoList.Models;
 
-internal class ChecklistTask : Task
+internal class ChecklistTask : Todo
 { 
     private readonly List<string> _subTasks;
 

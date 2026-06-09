@@ -1,6 +1,6 @@
 namespace TodoList.Models;
 
-internal class Task
+internal class Todo
 {
     public readonly HashSet<string> Tags = [];
     public static int LastId;
@@ -13,7 +13,7 @@ internal class Task
     
     public bool IsDone = false;
 
-    public Task(string title)
+    public Todo(string title)
     {
         _id = LastId;
         LastId++;

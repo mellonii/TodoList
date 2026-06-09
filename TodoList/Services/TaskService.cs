@@ -1,5 +1,4 @@
 using TodoList.Models;
-using Task = TodoList.Models.Task;
 using TaskRepository = TodoList.Repository.TaskRepository;
 
 namespace TodoList.Services;
@@ -7,12 +6,20 @@ namespace TodoList.Services;
 internal class TaskService
 {
     private readonly TaskRepository _taskRepository = new();
-    
-    public event Action<Task>? TaskCompleted;
-    private void MarkDone(Task task)
+    public delegate void TaskCompleted(string message);
+    public event TaskCompleted? Notify;
+
+    public TaskService() => Notify += DisplayMessage;
+    private static void DisplayMessage(string message) => PrintGreen(message);
+    private static void PrintGreen(string message)
     {
-        TaskCompleted?.Invoke(task);
+        var originalColor = Console.ForegroundColor;
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine(message);
+        Console.ForegroundColor = originalColor;
     }
+    
+    public void MarkDone(Todo todo) => Notify?.Invoke($"Ура! Задача {todo.Title} выполнена!");
     
     public void AddTask()
     {
@@ -54,7 +61,7 @@ internal class TaskService
     {
         Console.WriteLine("Введите описание задачи:");
         var title = "" + Console.ReadLine();
-        _taskRepository.Add(new Task(title));
+        _taskRepository.Add(new Todo(title));
     }
 
     private void AddDeadlinedTask()
