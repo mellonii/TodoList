@@ -6,20 +6,21 @@ namespace TodoList.Services;
 internal class TaskService
 {
     private readonly TaskRepository _taskRepository = new();
-    public delegate void TaskCompleted(string message);
-    public event TaskCompleted? Notify;
+    private delegate void Message(string message, ConsoleColor color);
+    private readonly Message _notify;
 
-    public TaskService() => Notify += DisplayMessage;
-    private static void DisplayMessage(string message) => PrintGreen(message);
-    private static void PrintGreen(string message)
+    public TaskService()
+    {
+        _notify += DisplayMessage;
+    }
+    
+    private static void DisplayMessage(string message, ConsoleColor color)
     {
         var originalColor = Console.ForegroundColor;
-        Console.ForegroundColor = ConsoleColor.Green;
+        Console.ForegroundColor = color;
         Console.WriteLine(message);
         Console.ForegroundColor = originalColor;
     }
-    
-    public void MarkDone(Todo todo) => Notify?.Invoke($"Ура! Задача {todo.Title} выполнена!");
     
     public void AddTask()
     {
@@ -54,7 +55,7 @@ internal class TaskService
                 Console.WriteLine("Такой операции не существует\n"); 
                 return;
         }
-        Console.WriteLine("Таска добавлена\n");
+        _notify.Invoke($"Задача добавлена!!", ConsoleColor.White);
     }
 
     private void AddSimpleTask()
@@ -117,7 +118,7 @@ internal class TaskService
             try
             {
                 _taskRepository.DoneCurrentTask(index);
-                MarkDone(_taskRepository.GetTaskById(index));
+                _notify.Invoke($"Задача {_taskRepository.GetTaskById(index).Title} выполнена!!", ConsoleColor.Green);
             }
             catch
             {
@@ -128,7 +129,6 @@ internal class TaskService
         {
             Console.WriteLine("Неправильно введен номер задачи\n");
         }
-        
     }
     
     public void DeleteTask()
@@ -145,8 +145,8 @@ internal class TaskService
         {
             try
             {
+                _notify.Invoke($"Задача {_taskRepository.GetTaskById(index).Title} удалена!!", ConsoleColor.Green);
                 _taskRepository.DeleteDoneTask(index);
-                Console.WriteLine("Таска удалена\n");
             }
             catch
             {
