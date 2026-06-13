@@ -1,8 +1,9 @@
 using TodoList.Models;
+using TodoList.Repository.Interfaces;
 
 namespace TodoList.Repository;
 
-public class TagRepository
+public class TagRepository : ITagRepository
 {
     public void AddTags(Todo todo, string text)
     {

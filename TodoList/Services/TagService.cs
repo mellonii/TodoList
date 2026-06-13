@@ -1,9 +1,11 @@
 using TodoList.Exceptions;
 using TodoList.Repository;
+using TodoList.Repository.Interfaces;
+using TodoList.Services.Interfaces;
 
 namespace TodoList.Services;
 
-internal class TagService(TagRepository tagRepository)
+internal class TagService(ITagRepository tagRepository) : ITagService
 {
     public void AddTags()
     {

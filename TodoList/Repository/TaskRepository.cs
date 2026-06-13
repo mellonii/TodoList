@@ -1,10 +1,11 @@
 using TodoList.Models;
 using TodoList.Exceptions;
+using TodoList.Repository.Interfaces;
 using static TodoList.Repository.StaticData;
 
 namespace TodoList.Repository;
 
-internal class TaskRepository
+internal class TaskRepository : ITaskRepository
 {
     public void Add<T>(T task) where T: Todo
     {

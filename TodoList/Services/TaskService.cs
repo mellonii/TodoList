@@ -1,16 +1,18 @@
 using TodoList.Models;
 using TodoList.Exceptions;
 using TodoList.Repository;
+using TodoList.Repository.Interfaces;
+using TodoList.Services.Interfaces;
 
 namespace TodoList.Services;
 
-internal class TaskService
+internal class TaskService : ITaskService
 {
-    private readonly TaskRepository _taskRepository;
+    private readonly ITaskRepository _taskRepository;
     private delegate void Message(string message, ConsoleColor color);
     private readonly Message _notify;
 
-    public TaskService(TaskRepository taskRepository)
+    public TaskService(ITaskRepository taskRepository)
     {
         _notify += DisplayMessage;
         _taskRepository = taskRepository;
