@@ -1,6 +1,6 @@
 namespace TodoList.Exceptions;
 
-public class EmptyReadLineException : Exception
+public class EmptyReadLineException : BusinesException
 {
     public EmptyReadLineException() : base("Была введена пустая строка") {}
     
