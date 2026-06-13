@@ -1,5 +1,6 @@
 ﻿using TodoList.Services;
 using TodoList.Exceptions;
+using TodoList.Repository;
 
 namespace TodoList;
 
@@ -27,8 +28,11 @@ class Program
         Console.Clear();
         
         int state;
-        var taskService = new TaskService();
-
+        var taskRepository = new TaskRepository();
+        var tagRepository = new TagRepository();
+        var tagService = new TagService(tagRepository);
+        var taskService = new TaskService(taskRepository);
+        
         do
         {
             taskService.ShowTasks();
@@ -68,15 +72,15 @@ class Program
                     Console.ReadKey();
                     break;
                 case 5:
-                    HandleErrors(taskService.AddTags);
+                    HandleErrors(tagService.AddTags);
                     Console.ReadKey();
                     break;
                 case 6:
-                    HandleErrors(taskService.DeleteTags);
+                    HandleErrors(tagService.DeleteTags);
                     Console.ReadKey();
                     break;
                 case 7:
-                    taskService.FindByTag();
+                    tagService.FindByTag();
                     Console.ReadKey();
                     break;
                 case 8:

@@ -1,51 +1,59 @@
 using TodoList.Models;
 using TodoList.Exceptions;
+using static TodoList.Repository.StaticData;
 
 namespace TodoList.Repository;
 
-class TaskRepository
+internal class TaskRepository
 {
-    private readonly Dictionary<int, Todo> _taskList = new();
-    
     public void Add<T>(T task) where T: Todo
     {
-        _taskList.Add(Todo.LastId - 1, task);
+        TaskList.Add(Todo.LastId - 1, task);
     }
 
-    public int GetCurrentTasksCount() => Todo.CurrentTasksCount;
-    public int GetDoneTasksCount() => Todo.DoneTasksCount;
+    public static int GetCurrentTasksCount() => Todo.CurrentTasksCount;
+    public static int GetDoneTasksCount() => Todo.DoneTasksCount;
+    
+    public static Todo? GetByIdOrDefault(int id)
+    {
+        if (TaskList.ContainsKey(id))
+        {
+            return TaskList[id];
+        }
+        return null;
+    }
 
     public void DoneCurrentTask(int id)
     {
-        if (!_taskList[id].IsDone)
+        if (!TaskList[id].IsDone)
         {
             Todo.CurrentTasksCount--;
             Todo.DoneTasksCount++;
-            _taskList[id].IsDone = true;
+            TaskList[id].IsDone = true;
         }
         else
         {
-            throw new TodoNotFoundException("Задачи с таким id среди текущих задач нет");
+            throw new TodoNotFoundException();
         }
     }
 
     public void DeleteDoneTask(int id)
     {
-        if (_taskList[id].IsDone)
+        if (TaskList[id].IsDone)
         {
             Todo.DoneTasksCount--;
-            _taskList.Remove(id);
+            TaskList.Remove(id);
         }
         else
         {
-            throw new TodoNotFoundException("Задачи с таким id среди выполненных задач нет");
+            throw new TodoNotFoundException();
         }
     }
     
     public string GetCurrentTasksList()
     {
         var title = "";
-        foreach (var task in _taskList)
+        foreach (var task in TaskList)
         {
             if (!task.Value.IsDone)
             {
@@ -58,7 +66,7 @@ class TaskRepository
     public string GetDoneTasksList()
     {
         var title = "";
-        foreach (var task in _taskList)
+        foreach (var task in TaskList)
         {
             if (task.Value.IsDone)
             {
@@ -67,56 +75,7 @@ class TaskRepository
         }                                                                                      
         return title;
     }
-
-    public Todo? GetByIdOrDefault(int id)
-    {
-        if (_taskList.ContainsKey(id))
-        {
-            return _taskList[id];
-        }
-        return null;
-    }
-
-    public void AddTags(Todo todo, string text)
-    {
-        var tagList = text.Split(',');
-        foreach (var tag in tagList)
-        {
-            todo.Tags.Add(tag.Trim());
-        }
-    }
-
-    public void DeleteTags(Todo todo, string text)
-    {
-        var tagList = text.Split(',');
-        foreach (var tag in tagList)
-        {
-            todo.Tags.Remove(tag.Trim());
-        }
-    }
-
-    public int GetTagCount(Todo todo)
-    {
-        return todo.Tags.Count;
-    }
     
-    public string? FindByTag(string tag)
-    {
-        List<string> list = [];
-        foreach (var task in _taskList)
-        {
-            if (task.Value.Tags.Contains(tag) && !task.Value.IsDone)
-            {
-                list.Add(task.Value.Title);
-            }
-        }
-        if (list.Count == 0)
-        {
-            return null;
-        }
-        return string.Join(", ", list);
-    }
-
     public (int, int, int) GetStats()
     {
         int total = GetDoneTasksCount() + GetCurrentTasksCount(), completed = GetDoneTasksCount(), overdue = GetCurrentTasksCount();

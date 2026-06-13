@@ -1,6 +1,6 @@
 namespace TodoList.Models;
 
-internal class Todo
+public class Todo
 {
     public readonly HashSet<string> Tags = [];
     public static int LastId;
