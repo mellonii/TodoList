@@ -12,10 +12,12 @@ internal class TaskRepository : ITaskRepository
         TaskList.Add(Todo.LastId - 1, task);
     }
 
-    public static int GetCurrentTasksCount() => Todo.CurrentTasksCount;
-    public static int GetDoneTasksCount() => Todo.DoneTasksCount;
+    public int GetCurrentTasksCount() => Todo.CurrentTasksCount;
+    public int GetDoneTasksCount() => Todo.DoneTasksCount;
     
-    public static Todo? GetByIdOrDefault(int id)
+    public bool EnsureTaskNotEmpty() => TaskList.Count != 0;
+    
+    public Todo? GetByIdOrDefault(int id)
     {
         if (TaskList.ContainsKey(id))
         {
@@ -26,55 +28,47 @@ internal class TaskRepository : ITaskRepository
 
     public void DoneCurrentTask(int id)
     {
-        if (!TaskList[id].IsDone)
-        {
-            Todo.CurrentTasksCount--;
-            Todo.DoneTasksCount++;
-            TaskList[id].IsDone = true;
-        }
-        else
-        {
-            throw new TodoNotFoundException();
-        }
+        var task = GetByIdOrDefault(id);
+        if (task is null || TaskList[id].IsDone) throw new TodoNotFoundException();
+        Todo.CurrentTasksCount--;
+        Todo.DoneTasksCount++;
+        TaskList[id].IsDone = true;
     }
 
-    public void DeleteDoneTask(int id)
+    public string DeleteDoneTask(int id)
     {
-        if (TaskList[id].IsDone)
-        {
-            Todo.DoneTasksCount--;
-            TaskList.Remove(id);
-        }
-        else
-        {
-            throw new TodoNotFoundException();
-        }
+        var task = GetByIdOrDefault(id);
+        if (task is null || !TaskList[id].IsDone) throw new TodoNotFoundException();
+        Todo.DoneTasksCount--;
+        var title = task.Title;
+        TaskList.Remove(id);
+        return title;
     }
     
-    public string GetCurrentTasksList()
+    public Dictionary<int, Todo> GetCurrentTasksList()
     {
-        var title = "";
-        foreach (var task in TaskList)
+        Dictionary<int, Todo> currentTaskList = new();
+        foreach (var (key, task) in TaskList)
         {
-            if (!task.Value.IsDone)
+            if (!task.IsDone)
             {
-                title += Convert.ToString(task.Key) + ": " + task.Value + "\n";
+                currentTaskList.Add(key, task);
             }
         }
-        return title;
+        return currentTaskList;
     } 
     
-    public string GetDoneTasksList()
+    public Dictionary<int, Todo> GetDoneTasksList()
     {
-        var title = "";
-        foreach (var task in TaskList)
+        Dictionary<int, Todo> doneTaskList = new();
+        foreach (var (key, task) in TaskList)
         {
-            if (task.Value.IsDone)
+            if (task.IsDone)
             {
-                title += Convert.ToString(task.Key) + ": " + task.Value + "\n";
+                doneTaskList.Add(key, task);
             }
-        }                                                                                      
-        return title;
+        }
+        return doneTaskList;
     }
 
     public bool SetPriority(Todo task, int priority)
@@ -84,10 +78,10 @@ internal class TaskRepository : ITaskRepository
         return true;
     }
     
-    public (int, int, int) GetStats()
+    public TodoStats GetStats()
     {
         int total = GetDoneTasksCount() + GetCurrentTasksCount(), completed = GetDoneTasksCount(), overdue = GetCurrentTasksCount();
-        return (total, completed, overdue);
+        var stats = new TodoStats(total, completed, overdue);
+        return stats;
     }
-    
 }

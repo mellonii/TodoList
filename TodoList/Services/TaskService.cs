@@ -1,6 +1,5 @@
 using TodoList.Models;
 using TodoList.Exceptions;
-using TodoList.Repository;
 using TodoList.Repository.Interfaces;
 using TodoList.Services.Interfaces;
 
@@ -120,7 +119,7 @@ internal class TaskService : ITaskService
 
     public void DoneTask()
     {
-        if (TaskRepository.GetCurrentTasksCount() == 0)
+        if (_taskRepository.GetCurrentTasksCount() == 0)
         {
             Console.WriteLine("Список задач пуст\n");
             return;
@@ -130,20 +129,15 @@ internal class TaskService : ITaskService
 
         if (int.TryParse(Console.ReadLine(), out var id))
         {
-            var task = TaskRepository.GetByIdOrDefault(id);
-            if (task is not null)
-            {
-                _taskRepository.DoneCurrentTask(id);
-                _notify.Invoke($"Задача {task.Title} выполнена!!", ConsoleColor.Green);
-            }
-            else throw new TodoNotFoundException();
+            _taskRepository.DoneCurrentTask(id);
+            _notify.Invoke($"Задача {_taskRepository.GetByIdOrDefault(id).Title} выполнена!!", ConsoleColor.Green);
         }
         else throw new InvalidTodoDataException();
     }
     
     public void DeleteTask()
     {
-        if (TaskRepository.GetDoneTasksCount() == 0)
+        if (_taskRepository.GetDoneTasksCount() == 0)
         {
             Console.WriteLine("Список выполненных задач пуст\n");
             return;
@@ -153,37 +147,40 @@ internal class TaskService : ITaskService
         
         if (int.TryParse(Console.ReadLine(), out var id))
         {
-            var task = TaskRepository.GetByIdOrDefault(id);
-            if (task is not null)
-            {
-                _taskRepository.DeleteDoneTask(id);
-                _notify.Invoke($"Задача {task.Title} удалена!!", ConsoleColor.Green);
-            }
-            else throw new TodoNotFoundException();
+            var title = _taskRepository.DeleteDoneTask(id);
+            _notify.Invoke($"Задача {title} удалена!!", ConsoleColor.Green);
         }
         else throw new InvalidTodoDataException();
     }
 
     public void ShowTasks()
     {
-        if (TaskRepository.GetCurrentTasksCount() != 0)
+        if (_taskRepository.GetCurrentTasksCount() != 0)
         {
             Console.WriteLine("Список текущих задач:");
-            Console.WriteLine(_taskRepository.GetCurrentTasksList());
-            Console.WriteLine("\n");
+            var title = "";
+            foreach (var task in _taskRepository.GetCurrentTasksList())
+            {
+                title += Convert.ToString(task.Key) + ": " + task.Value + "\n";
+            }
+            Console.WriteLine(title + "\n");
         }
 
-        if (TaskRepository.GetDoneTasksCount() != 0)
+        if (_taskRepository.GetDoneTasksCount() != 0)
         {
             Console.WriteLine("Список выполненных задач:");
-            Console.WriteLine(_taskRepository.GetDoneTasksList());
-            Console.WriteLine("\n");
+            var title = "";
+            foreach (var task in _taskRepository.GetDoneTasksList())
+            {
+                title += Convert.ToString(task.Key) + ": " + task.Value + "\n";
+            }
+            Console.WriteLine(title + "\n");
         }
     }
 
     public void SetPriority()
     {
-        if (TaskRepository.GetCurrentTasksCount() == 0 && TaskRepository.GetDoneTasksCount() == 0)
+        if (!_taskRepository.EnsureTaskNotEmpty())
         {
             Console.WriteLine("Список задач пуст\n");
             return;
@@ -193,7 +190,7 @@ internal class TaskService : ITaskService
         
         if (int.TryParse(Console.ReadLine(), out var id))
         {
-            var task = TaskRepository.GetByIdOrDefault(id);
+            var task = _taskRepository.GetByIdOrDefault(id);
             if (task is not null)
             {
                 while (true)
@@ -210,8 +207,8 @@ internal class TaskService : ITaskService
 
     public void GetStats()
     {
-        var (total, completed, overdue) = _taskRepository.GetStats();
-        Console.WriteLine($"Всего задач: {total}, выполнено: {completed}, осталось: {overdue}");
+        var stats = _taskRepository.GetStats();
+        Console.WriteLine($"Всего задач: {stats.TasksCount}, выполнено: {stats.DoneTasksCount}, осталось: {stats.OverdueTasksCount}");
     }
     
 }

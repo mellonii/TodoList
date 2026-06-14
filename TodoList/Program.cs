@@ -13,15 +13,7 @@ class Program
         {
             func();
         }
-        catch (InvalidTodoDataException ex)
-        {
-            Console.WriteLine($"Ошибка: {ex.Message}");
-        }
-        catch (TodoNotFoundException ex)
-        {
-            Console.WriteLine($"Ошибка: {ex.Message}");
-        }
-        catch (EmptyReadLineException ex)
+        catch (BusinesException ex)
         {
             Console.WriteLine($"Ошибка: {ex.Message}");
         }
@@ -36,7 +28,7 @@ class Program
         int state;
         var taskRepository = new TaskRepository();
         var tagRepository = new TagRepository();
-        var tagService = new TagService(tagRepository);
+        var tagService = new TagService(tagRepository, taskRepository);
         var taskService = new TaskService(taskRepository);
         
         do
