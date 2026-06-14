@@ -2,7 +2,7 @@ namespace TodoList.Models;
 
 public class Todo
 {
-    public readonly HashSet<string> Tags = [];
+    public static readonly HashSet<string> Tags = [];
     public static int LastId;
     public static int CurrentTasksCount;
     public static int DoneTasksCount = 0;
