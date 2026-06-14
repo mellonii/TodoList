@@ -79,7 +79,14 @@ internal class TagService : ITagService
         Console.WriteLine("Введите тег");
         var tag = "" + Console.ReadLine();
         if (tag == "") throw new EmptyReadLineException();
-        var text = _tagRepository.FindByTag(tag);
-        Console.WriteLine(text ?? "Задач с таким тегом нет");
+        var todoList = _tagRepository.FindByTag(tag);
+        if (todoList.Count == 0) Console.WriteLine("Задач с таким тегом нет");
+        
+        List<string> list = [];
+        foreach (var task in todoList)
+        {
+            list.Add(task.Value.Title);
+        }
+        Console.WriteLine(string.Join(", ", list));
     }
 }

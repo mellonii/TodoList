@@ -28,20 +28,16 @@ public class TagRepository : ITagRepository
         return todo.Tags.Count;
     }
     
-    public string? FindByTag(string tag)
+    public Dictionary<int, Todo> FindByTag(string tag)
     {
-        List<string> list = [];
-        foreach (var task in StaticData.TaskList)
+        Dictionary<int, Todo> list = new();
+        foreach (var (id, task) in StaticData.TaskList)
         {
-            if (task.Value.Tags.Contains(tag) && !task.Value.IsDone)
+            if (task.Tags.Contains(tag) && !task.IsDone)
             {
-                list.Add(task.Value.Title);
+                list.Add(id, task);
             }
         }
-        if (list.Count == 0)
-        {
-            return null;
-        }
-        return string.Join(", ", list);
+        return list;
     }
 }
