@@ -1,4 +1,5 @@
-﻿using TodoList.Services;
+﻿using System.Text;
+using TodoList.Services;
 using TodoList.Exceptions;
 using TodoList.Repository;
 
@@ -24,6 +25,7 @@ class Program
     
     private static void Main()
     {
+        Console.OutputEncoding = Encoding.UTF8;
         Console.ForegroundColor = ConsoleColor.DarkMagenta;
         Console.Clear();
         
@@ -46,6 +48,7 @@ class Program
                               6 - удалить теги
                               7 - поиск по тегу
                               8 - получить статистику
+                              9 - добавить приоритет
                               """ + "\n");
 
             if (!int.TryParse(Console.ReadLine(), out state))
@@ -85,6 +88,10 @@ class Program
                     break;
                 case 8:
                     taskService.GetStats();
+                    Console.ReadKey();
+                    break;
+                case 9:
+                    HandleErrors(taskService.SetPriority);
                     Console.ReadKey();
                     break;
                 default:

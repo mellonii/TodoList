@@ -76,6 +76,13 @@ internal class TaskRepository : ITaskRepository
         }                                                                                      
         return title;
     }
+
+    public bool SetPriority(Todo task, int priority)
+    {
+        if (priority is < 0 or > 3) return false;
+        task.Priority = priority;
+        return true;
+    }
     
     public (int, int, int) GetStats()
     {

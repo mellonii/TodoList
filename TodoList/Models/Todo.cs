@@ -2,16 +2,17 @@ namespace TodoList.Models;
 
 public class Todo
 {
-    public static readonly HashSet<string> Tags = [];
+    public readonly HashSet<string> Tags = [];
     public static int LastId;
     public static int CurrentTasksCount;
     public static int DoneTasksCount = 0;
-    public readonly string Title;
     
     private int _id;
     private DateTimeOffset _createdAt;
     
+    public readonly string Title;
     public bool IsDone = false;
+    public int Priority = 0;
 
     public Todo(string title)
     {
@@ -24,10 +25,8 @@ public class Todo
     
     public override string ToString()
     {
-        if (Tags.Count == 0)
-        {
-            return Title;
-        }
-        return $"{Title} ({string.Join(", ", Tags)})";
+        if (Tags.Count == 0) return Priority == 0 ? Title : $"{Title} - ☆ {Priority} ☆ ";
+        if (Priority == 0) return $"{Title} ({string.Join(", ", Tags)}) ";
+        return $"{Title} ({string.Join(", ", Tags)}) - ☆ {Priority} ☆ ";
     }
 }

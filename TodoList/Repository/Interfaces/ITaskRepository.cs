@@ -10,4 +10,5 @@ internal interface ITaskRepository
     string GetCurrentTasksList();
     string GetDoneTasksList();
     (int, int, int) GetStats();
+    bool SetPriority(Todo task, int priority);
 }

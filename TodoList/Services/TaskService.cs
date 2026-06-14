@@ -181,6 +181,33 @@ internal class TaskService : ITaskService
         }
     }
 
+    public void SetPriority()
+    {
+        if (TaskRepository.GetCurrentTasksCount() == 0 && TaskRepository.GetDoneTasksCount() == 0)
+        {
+            Console.WriteLine("Список задач пуст\n");
+            return;
+        }
+        
+        Console.WriteLine("Введите номер задачи:");
+        
+        if (int.TryParse(Console.ReadLine(), out var id))
+        {
+            var task = TaskRepository.GetByIdOrDefault(id);
+            if (task is not null)
+            {
+                while (true)
+                {
+                    Console.WriteLine("Введите приоритет задачи (от 1 до 3, по умолчанию 0):");
+                    if (!int.TryParse(Console.ReadLine(), out var priority)) continue;
+                    if (_taskRepository.SetPriority(task, priority)) break;
+                }
+            }
+            else throw new TodoNotFoundException();
+        }
+        else throw new InvalidTodoDataException();
+    }
+
     public void GetStats()
     {
         var (total, completed, overdue) = _taskRepository.GetStats();

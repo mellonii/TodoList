@@ -7,4 +7,5 @@ internal interface ITaskService
     void DeleteTask();
     void ShowTasks();
     void GetStats();
+    void SetPriority();
 }
