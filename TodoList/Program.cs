@@ -1,27 +1,44 @@
-﻿using TodoList.Services;
+﻿using System.Text;
+using TodoList.Services;
+using TodoList.Exceptions;
+using TodoList.Repository;
 
 namespace TodoList;
 
 class Program
 {
-    private static void DisplayMessage(TodoList.Models.Task task) => PrintGreen($"Ура! Задача {task.Title} выполнена!");
-    private static void PrintGreen(string message)
+    private static void HandleErrors(Action func)
     {
-        var originalColor = Console.ForegroundColor;
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine(message);
-        Console.ForegroundColor = originalColor;
+        try
+        {
+            func();
+        }
+        catch (InvalidTodoDataException ex)
+        {
+            Console.WriteLine($"Ошибка: {ex.Message}");
+        }
+        catch (TodoNotFoundException ex)
+        {
+            Console.WriteLine($"Ошибка: {ex.Message}");
+        }
+        catch (EmptyReadLineException ex)
+        {
+            Console.WriteLine($"Ошибка: {ex.Message}");
+        }
     }
     
     private static void Main()
     {
+        Console.OutputEncoding = Encoding.UTF8;
         Console.ForegroundColor = ConsoleColor.DarkMagenta;
         Console.Clear();
         
         int state;
-        var taskService = new TaskService();
-        taskService.TaskCompleted += DisplayMessage;
-
+        var taskRepository = new TaskRepository();
+        var tagRepository = new TagRepository();
+        var tagService = new TagService(tagRepository);
+        var taskService = new TaskService(taskRepository);
+        
         do
         {
             taskService.ShowTasks();
@@ -35,6 +52,7 @@ class Program
                               6 - удалить теги
                               7 - поиск по тегу
                               8 - получить статистику
+                              9 - установить приоритет
                               """ + "\n");
 
             if (!int.TryParse(Console.ReadLine(), out state))
@@ -49,31 +67,35 @@ class Program
                 case 1:
                     break;
                 case 2:
-                    taskService.AddTask();
+                    HandleErrors(taskService.AddTask);
                     Console.ReadKey();
                     break;
                 case 3:
-                    taskService.DoneTask();
+                    HandleErrors(taskService.DoneTask);
                     Console.ReadKey();
                     break;
                 case 4:
-                    taskService.DeleteTask();
+                    HandleErrors(taskService.DeleteTask);
                     Console.ReadKey();
                     break;
                 case 5:
-                    taskService.AddTags();
+                    HandleErrors(tagService.AddTags);
                     Console.ReadKey();
                     break;
                 case 6:
-                    taskService.DeleteTags();
+                    HandleErrors(tagService.DeleteTags);
                     Console.ReadKey();
                     break;
                 case 7:
-                    taskService.FindByTag();
+                    tagService.FindByTag();
                     Console.ReadKey();
                     break;
                 case 8:
                     taskService.GetStats();
+                    Console.ReadKey();
+                    break;
+                case 9:
+                    HandleErrors(taskService.SetPriority);
                     Console.ReadKey();
                     break;
                 default:

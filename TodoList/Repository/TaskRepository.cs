@@ -1,59 +1,60 @@
-using Task = TodoList.Models.Task;
+using TodoList.Models;
+using TodoList.Exceptions;
+using TodoList.Repository.Interfaces;
+using static TodoList.Repository.StaticData;
 
 namespace TodoList.Repository;
 
-class TaskRepository
+internal class TaskRepository : ITaskRepository
 {
-    private readonly Dictionary<int, Task> _taskList = new();
-    
-    public void Add<T>(T task) where T: Task
+    public void Add<T>(T task) where T: Todo
     {
-        _taskList.Add(Task.LastId - 1, task);
+        TaskList.Add(Todo.LastId - 1, task);
     }
 
-    public int GetCurrentTasksCount() => Task.CurrentTasksCount;
-    public int GetDoneTasksCount() => Task.DoneTasksCount;
-
-    public Task? GetTaskById(int id)
+    public static int GetCurrentTasksCount() => Todo.CurrentTasksCount;
+    public static int GetDoneTasksCount() => Todo.DoneTasksCount;
+    
+    public static Todo? GetByIdOrDefault(int id)
     {
-        if (_taskList.ContainsKey(id))
+        if (TaskList.ContainsKey(id))
         {
-            return _taskList[id];
+            return TaskList[id];
         }
         return null;
     }
 
     public void DoneCurrentTask(int id)
     {
-        if (_taskList.ContainsKey(id) && !_taskList[id].IsDone)
+        if (!TaskList[id].IsDone)
         {
-            Task.CurrentTasksCount--;
-            Task.DoneTasksCount++;
-            _taskList[id].IsDone = true;
+            Todo.CurrentTasksCount--;
+            Todo.DoneTasksCount++;
+            TaskList[id].IsDone = true;
         }
         else
         {
-            throw new Exception("Нет такой задачи");
+            throw new TodoNotFoundException();
         }
     }
 
     public void DeleteDoneTask(int id)
     {
-        if (_taskList.ContainsKey(id) && _taskList[id].IsDone)
+        if (TaskList[id].IsDone)
         {
-            Task.DoneTasksCount--;
-            _taskList.Remove(id);
+            Todo.DoneTasksCount--;
+            TaskList.Remove(id);
         }
         else
         {
-            throw new Exception("Нет такой задачи");
+            throw new TodoNotFoundException();
         }
     }
     
     public string GetCurrentTasksList()
     {
         var title = "";
-        foreach (var task in _taskList)
+        foreach (var task in TaskList)
         {
             if (!task.Value.IsDone)
             {
@@ -66,7 +67,7 @@ class TaskRepository
     public string GetDoneTasksList()
     {
         var title = "";
-        foreach (var task in _taskList)
+        foreach (var task in TaskList)
         {
             if (task.Value.IsDone)
             {
@@ -76,58 +77,13 @@ class TaskRepository
         return title;
     }
 
-    public Task? GetByIdOrDefault(int id)
+    public bool SetPriority(Todo task, int priority)
     {
-        if (_taskList.ContainsKey(id))
-        {
-            return _taskList[id];
-        }
-        else
-        {
-            return null;
-        }
-    }
-
-    public void AddTags(Task task, string text)
-    {
-        var tagList = text.Split(',');
-        foreach (var tag in tagList)
-        {
-            task.Tags.Add(tag.Trim());
-        }
-    }
-
-    public void DeleteTags(Task task, string text)
-    {
-        var tagList = text.Split(',');
-        foreach (var tag in tagList)
-        {
-            task.Tags.Remove(tag.Trim());
-        }
-    }
-
-    public int GetTagCount(Task task)
-    {
-        return task.Tags.Count;
+        if (priority is < 0 or > 3) return false;
+        task.Priority = priority;
+        return true;
     }
     
-    public string? FindByTag(string tag)
-    {
-        List<string> list = [];
-        foreach (var task in _taskList)
-        {
-            if (task.Value.Tags.Contains(tag) && !task.Value.IsDone)
-            {
-                list.Add(task.Value.Title);
-            }
-        }
-        if (list.Count == 0)
-        {
-            return null;
-        }
-        return string.Join(", ", list);
-    }
-
     public (int, int, int) GetStats()
     {
         int total = GetDoneTasksCount() + GetCurrentTasksCount(), completed = GetDoneTasksCount(), overdue = GetCurrentTasksCount();
