@@ -21,6 +21,10 @@ class Program
         {
             Console.WriteLine($"Ошибка: {ex.Message}");
         }
+        catch (EmptyReadLineException ex)
+        {
+            Console.WriteLine($"Ошибка: {ex.Message}");
+        }
     }
     
     private static void Main()
