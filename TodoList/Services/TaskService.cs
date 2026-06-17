@@ -1,17 +1,28 @@
 using TodoList.Models;
-using Task = TodoList.Models.Task;
-using TaskRepository = TodoList.Repository.TaskRepository;
+using TodoList.Exceptions;
+using TodoList.Repository.Interfaces;
+using TodoList.Services.Interfaces;
 
 namespace TodoList.Services;
 
-internal class TaskService
+internal class TaskService : ITaskService
 {
-    private readonly TaskRepository _taskRepository = new();
-    
-    public event Action<Task>? TaskCompleted;
-    private void MarkDone(Task task)
+    private readonly ITaskRepository _taskRepository;
+    private delegate void Message(string message, ConsoleColor color);
+    private readonly Message _notify;
+
+    public TaskService(ITaskRepository taskRepository)
     {
-        TaskCompleted?.Invoke(task);
+        _notify += DisplayMessage;
+        _taskRepository = taskRepository;
+    }
+    
+    private static void DisplayMessage(string message, ConsoleColor color)
+    {
+        var originalColor = Console.ForegroundColor;
+        Console.ForegroundColor = color;
+        Console.WriteLine(message);
+        Console.ForegroundColor = originalColor;
     }
     
     public void AddTask()
@@ -47,32 +58,39 @@ internal class TaskService
                 Console.WriteLine("Такой операции не существует\n"); 
                 return;
         }
-        Console.WriteLine("Таска добавлена\n");
+        _notify.Invoke($"Задача добавлена!!", ConsoleColor.White);
     }
 
     private void AddSimpleTask()
     {
         Console.WriteLine("Введите описание задачи:");
         var title = "" + Console.ReadLine();
-        _taskRepository.Add(new Task(title));
+        if (title is "")
+        {
+            throw new EmptyReadLineException();
+        }
+        _taskRepository.Add(new Todo(title));
     }
 
     private void AddDeadlinedTask()
     {
         Console.WriteLine("Введите описание задачи:");
         var title = "" + Console.ReadLine();
+        if (title is "")
+        {
+            throw new EmptyReadLineException();
+        }
         while (true)
         {
             Console.WriteLine("Введите дату в формате dd/mm/YYYY hh:mm:ss");
-            try
-            {
-                var deadlineTime = DateTimeOffset.Parse("" + Console.ReadLine());
-                _taskRepository.Add(new DeadlinedTask(title, deadlineTime));
-                break;
-            }
-            catch
+            if (!DateTimeOffset.TryParse("" + Console.ReadLine(), out var deadlineTime))
             {
                 Console.WriteLine("Неправильно введена дата");
+            }
+            else
+            {
+                _taskRepository.Add(new DeadlinedTask(title, deadlineTime));
+                break;
             }
         }
     }
@@ -81,6 +99,10 @@ internal class TaskService
     {
         Console.WriteLine("Введите описание задачи:");
         var title = "" + Console.ReadLine();
+        if (title is "")
+        {
+            throw new EmptyReadLineException();
+        }
         Console.WriteLine("Введи подзадачи:");
         List<string> subTasks = [];
         while (true)
@@ -105,23 +127,12 @@ internal class TaskService
         
         Console.WriteLine("Введите номер выполненной задачи:");
 
-        if (int.TryParse(Console.ReadLine(), out var index))
+        if (int.TryParse(Console.ReadLine(), out var id))
         {
-            try
-            {
-                _taskRepository.DoneCurrentTask(index);
-                MarkDone(_taskRepository.GetTaskById(index));
-            }
-            catch
-            {
-                Console.WriteLine("Такой задачи не существует\n");
-            }
+            _taskRepository.DoneCurrentTask(id);
+            _notify.Invoke($"Задача {_taskRepository.GetByIdOrDefault(id).Title} выполнена!!", ConsoleColor.Green);
         }
-        else
-        {
-            Console.WriteLine("Неправильно введен номер задачи\n");
-        }
-        
+        else throw new InvalidTodoDataException();
     }
     
     public void DeleteTask()
@@ -134,24 +145,12 @@ internal class TaskService
         
         Console.WriteLine("Введите номер выполненной задачи:");
         
-        if (int.TryParse(Console.ReadLine(), out var index))
+        if (int.TryParse(Console.ReadLine(), out var id))
         {
-            try
-            {
-                _taskRepository.DeleteDoneTask(index);
-                Console.WriteLine("Таска удалена\n");
-            }
-            catch
-            {
-                Console.WriteLine("Такой задачи не существует\n");
-            }
-            
+            var title = _taskRepository.DeleteDoneTask(id);
+            _notify.Invoke($"Задача {title} удалена!!", ConsoleColor.Green);
         }
-        else
-        {
-            Console.WriteLine("Неправильно введен номер задачи\n");
-        }
-        
+        else throw new InvalidTodoDataException();
     }
 
     public void ShowTasks()
@@ -159,104 +158,57 @@ internal class TaskService
         if (_taskRepository.GetCurrentTasksCount() != 0)
         {
             Console.WriteLine("Список текущих задач:");
-            Console.WriteLine(_taskRepository.GetCurrentTasksList());
-            Console.WriteLine("\n");
+            var title = "";
+            foreach (var task in _taskRepository.GetCurrentTasksList())
+            {
+                title += Convert.ToString(task.Key) + ": " + task.Value + "\n";
+            }
+            Console.WriteLine(title + "\n");
         }
 
         if (_taskRepository.GetDoneTasksCount() != 0)
         {
             Console.WriteLine("Список выполненных задач:");
-            Console.WriteLine(_taskRepository.GetDoneTasksList());
-            Console.WriteLine("\n");
-        }
-    }
-
-    public void AddTags()
-    {
-        Console.WriteLine("Введите номер задачи, которой хотите добавить тег");
-        if (!int.TryParse(Console.ReadLine(), out var id))
-        {
-            Console.WriteLine("Такой задачи не существует\n");
-            return;
-        }
-
-        var task = _taskRepository.GetByIdOrDefault(id);
-        if (task is not null)
-        {
-            Console.WriteLine("Введите список тегов через запятую");
-            var tags = "" + Console.ReadLine();
-            if (tags == "")
+            var title = "";
+            foreach (var task in _taskRepository.GetDoneTasksList())
             {
-                Console.WriteLine("Вы ввели пустую строку");
-                return;
+                title += Convert.ToString(task.Key) + ": " + task.Value + "\n";
             }
-            _taskRepository.AddTags(task, tags);
-            Console.WriteLine("Теги добавлены\n");
-        }
-        else
-        {
-            Console.WriteLine("Такой задачи не существует\n");
+            Console.WriteLine(title + "\n");
         }
     }
 
-    public void DeleteTags()
+    public void SetPriority()
     {
-        Console.WriteLine("Введите номер задачи, у которой хотите удалить тег");
-        if (!int.TryParse(Console.ReadLine(), out var id))
+        if (!_taskRepository.EnsureTaskNotEmpty())
         {
-            Console.WriteLine("Такой задачи не существует\n");
+            Console.WriteLine("Список задач пуст\n");
             return;
         }
-
-        var task = _taskRepository.GetByIdOrDefault(id);
         
-        if (task is not null)
+        Console.WriteLine("Введите номер задачи:");
+        
+        if (int.TryParse(Console.ReadLine(), out var id))
         {
-            if (_taskRepository.GetTagCount(task) == 0)
+            var task = _taskRepository.GetByIdOrDefault(id);
+            if (task is not null)
             {
-                Console.WriteLine("У данной задачи нет тегов\n");
-                return;
+                while (true)
+                {
+                    Console.WriteLine("Введите приоритет задачи (от 1 до 3, по умолчанию 0):");
+                    if (!int.TryParse(Console.ReadLine(), out var priority)) continue;
+                    if (_taskRepository.SetPriority(task, priority)) break;
+                }
             }
-            Console.WriteLine("Введите список тегов на удаление через запятую");
-            var tags = "" + Console.ReadLine();
-            if (tags == "")
-            {
-                Console.WriteLine("Вы ввели пустую строку");
-                return;
-            }
-            _taskRepository.DeleteTags(task, tags);
-            Console.WriteLine("Теги удалены\n");
+            else throw new TodoNotFoundException();
         }
-        else
-        {
-            Console.WriteLine("Такой задачи не существует\n");
-        }
-    }
-
-    public void FindByTag()
-    {
-        Console.WriteLine("Введите тег");
-        var tag = "" + Console.ReadLine();
-        if (tag == "")
-        {
-            Console.WriteLine("Вы ввели пустую строку");
-            return;
-        }
-        var text = _taskRepository.FindByTag(tag);
-        if (text is not null)
-        {
-            Console.WriteLine(text);
-        }
-        else
-        {
-            Console.WriteLine("Задач с таким тегом нет");
-        }
+        else throw new InvalidTodoDataException();
     }
 
     public void GetStats()
     {
-        var (total, completed, overdue) = _taskRepository.GetStats();
-        Console.WriteLine($"Всего задач: {total}, выполнено: {completed}, осталось: {overdue}");
+        var stats = _taskRepository.GetStats();
+        Console.WriteLine($"Всего задач: {stats.TasksCount}, выполнено: {stats.DoneTasksCount}, осталось: {stats.OverdueTasksCount}");
     }
     
 }

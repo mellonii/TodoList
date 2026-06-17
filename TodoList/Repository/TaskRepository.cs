@@ -1,137 +1,87 @@
-using Task = TodoList.Models.Task;
+using TodoList.Models;
+using TodoList.Exceptions;
+using TodoList.Repository.Interfaces;
+using static TodoList.Repository.StaticData;
 
 namespace TodoList.Repository;
 
-class TaskRepository
+internal class TaskRepository : ITaskRepository
 {
-    private readonly Dictionary<int, Task> _taskList = new();
-    
-    public void Add<T>(T task) where T: Task
+    public void Add<T>(T task) where T: Todo
     {
-        _taskList.Add(Task.LastId - 1, task);
+        TaskList.Add(Todo.LastId - 1, task);
     }
 
-    public int GetCurrentTasksCount() => Task.CurrentTasksCount;
-    public int GetDoneTasksCount() => Task.DoneTasksCount;
-
-    public Task? GetTaskById(int id)
+    public int GetCurrentTasksCount() => Todo.CurrentTasksCount;
+    public int GetDoneTasksCount() => Todo.DoneTasksCount;
+    
+    public bool EnsureTaskNotEmpty() => TaskList.Count != 0;
+    
+    public Todo? GetByIdOrDefault(int id)
     {
-        if (_taskList.ContainsKey(id))
+        if (TaskList.ContainsKey(id))
         {
-            return _taskList[id];
+            return TaskList[id];
         }
         return null;
     }
 
     public void DoneCurrentTask(int id)
     {
-        if (_taskList.ContainsKey(id) && !_taskList[id].IsDone)
-        {
-            Task.CurrentTasksCount--;
-            Task.DoneTasksCount++;
-            _taskList[id].IsDone = true;
-        }
-        else
-        {
-            throw new Exception("Нет такой задачи");
-        }
+        var task = GetByIdOrDefault(id);
+        if (task is null || TaskList[id].IsDone) throw new TodoNotFoundException();
+        Todo.CurrentTasksCount--;
+        Todo.DoneTasksCount++;
+        TaskList[id].IsDone = true;
     }
 
-    public void DeleteDoneTask(int id)
+    public string DeleteDoneTask(int id)
     {
-        if (_taskList.ContainsKey(id) && _taskList[id].IsDone)
-        {
-            Task.DoneTasksCount--;
-            _taskList.Remove(id);
-        }
-        else
-        {
-            throw new Exception("Нет такой задачи");
-        }
+        var task = GetByIdOrDefault(id);
+        if (task is null || !TaskList[id].IsDone) throw new TodoNotFoundException();
+        Todo.DoneTasksCount--;
+        var title = task.Title;
+        TaskList.Remove(id);
+        return title;
     }
     
-    public string GetCurrentTasksList()
+    public Dictionary<int, Todo> GetCurrentTasksList()
     {
-        var title = "";
-        foreach (var task in _taskList)
+        Dictionary<int, Todo> currentTaskList = new();
+        foreach (var (key, task) in TaskList)
         {
-            if (!task.Value.IsDone)
+            if (!task.IsDone)
             {
-                title += Convert.ToString(task.Key) + ": " + task.Value + "\n";
+                currentTaskList.Add(key, task);
             }
         }
-        return title;
+        return currentTaskList;
     } 
     
-    public string GetDoneTasksList()
+    public Dictionary<int, Todo> GetDoneTasksList()
     {
-        var title = "";
-        foreach (var task in _taskList)
+        Dictionary<int, Todo> doneTaskList = new();
+        foreach (var (key, task) in TaskList)
         {
-            if (task.Value.IsDone)
+            if (task.IsDone)
             {
-                title += Convert.ToString(task.Key) + ": " + task.Value + "\n";
+                doneTaskList.Add(key, task);
             }
-        }                                                                                      
-        return title;
+        }
+        return doneTaskList;
     }
 
-    public Task? GetByIdOrDefault(int id)
+    public bool SetPriority(Todo task, int priority)
     {
-        if (_taskList.ContainsKey(id))
-        {
-            return _taskList[id];
-        }
-        else
-        {
-            return null;
-        }
-    }
-
-    public void AddTags(Task task, string text)
-    {
-        var tagList = text.Split(',');
-        foreach (var tag in tagList)
-        {
-            task.Tags.Add(tag.Trim());
-        }
-    }
-
-    public void DeleteTags(Task task, string text)
-    {
-        var tagList = text.Split(',');
-        foreach (var tag in tagList)
-        {
-            task.Tags.Remove(tag.Trim());
-        }
-    }
-
-    public int GetTagCount(Task task)
-    {
-        return task.Tags.Count;
+        if (priority is < 0 or > 3) return false;
+        task.Priority = priority;
+        return true;
     }
     
-    public string? FindByTag(string tag)
-    {
-        List<string> list = [];
-        foreach (var task in _taskList)
-        {
-            if (task.Value.Tags.Contains(tag) && !task.Value.IsDone)
-            {
-                list.Add(task.Value.Title);
-            }
-        }
-        if (list.Count == 0)
-        {
-            return null;
-        }
-        return string.Join(", ", list);
-    }
-
-    public (int, int, int) GetStats()
+    public TodoStats GetStats()
     {
         int total = GetDoneTasksCount() + GetCurrentTasksCount(), completed = GetDoneTasksCount(), overdue = GetCurrentTasksCount();
-        return (total, completed, overdue);
+        var stats = new TodoStats(total, completed, overdue);
+        return stats;
     }
-    
 }
