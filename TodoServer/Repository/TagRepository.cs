@@ -30,14 +30,8 @@ public class TagRepository : ITagRepository
     
     public Dictionary<int, Todo> FindByTag(string tag)
     {
-        Dictionary<int, Todo> list = new();
-        foreach (var (id, task) in StaticData.TaskList)
-        {
-            if (task.Tags.Contains(tag) && !task.IsDone)
-            {
-                list.Add(id, task);
-            }
-        }
-        return list;
+        return StaticData.TaskList
+            .Where(task => task.Value.Tags.Contains(tag) && !task.Value.IsDone)
+            .ToDictionary(task => task.Key, task => task.Value);
     }
 }

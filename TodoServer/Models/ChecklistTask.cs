@@ -11,11 +11,6 @@ internal class ChecklistTask : Todo
 
     public override string ToString()
     {
-        var text = base.ToString() + "\n";
-        foreach (var subTask in _subTasks)
-        {
-            text += "\t> " + subTask + "\n";
-        }
-        return text;
+        return _subTasks.Aggregate(base.ToString() + "\n", (tmp, subTask) => tmp + "\t> " + subTask + "\n");
     }
 }

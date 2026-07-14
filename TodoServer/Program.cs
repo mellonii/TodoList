@@ -22,8 +22,6 @@ class Program
     private static void Main(string[] args)
     {
         Console.OutputEncoding = Encoding.UTF8;
-        Console.ForegroundColor = ConsoleColor.DarkMagenta;
-        Console.Clear();
         
         var taskRepository = new TaskRepository();
         var tagRepository = new TagRepository();
@@ -43,43 +41,30 @@ class Program
 
         app.MapGet("/", () => "Hello World!");
 
-        var taskGroup = app.MapGroup("/tasks");
-        taskGroup.MapGet("/", GetTasks);
-        taskGroup.MapGet("/{id:int}", GetTaskById);
-        taskGroup.MapGet("/{id:int}/tags", GetTagsById);
-        taskGroup.MapGet("/{id:int}/priority", GetPriorityById);
-        taskGroup.MapGet("/current", GetCurrentTasks);
-        taskGroup.MapGet("/done", GetDoneTasks);
+        app.MapGet("/tasks", taskService.GetTasks);
+        app.MapGet("/tasks/{id:int}", taskService.GetTaskById);
+        app.MapGet("/tasks/{id:int}/tags", tagService.GetTagsById);
+        app.MapGet("/tasks/{id:int}/priority", taskService.GetPriorityById);
+        app.MapGet("/tasks/current", taskService.GetCurrentTasks);
+        app.MapGet("/tasks/done", taskService.GetDoneTasks);
 
-        var tagGroup = app.MapGroup("/tags");
-        tagGroup.MapGet("/", GetTags);
-        tagGroup.MapGet("/{tag}", GetTasksByTag);
+        app.MapGet("/tag", tagService.GetTags);
+        app.MapGet("/tag/{tag}", tagService.FindByTag);
         
-        app.MapGet("/stats", GetStats);
-
+        app.MapGet("/add/task/{title}", taskService.AddSimpleTask);
+        app.MapGet("/add/task/{title}/{time:DateTime}", taskService.AddDeadlinedTask);
+        app.MapGet("/add/task/{title}/{text}", taskService.AddChecklistTask);
+        app.MapGet("/add/tag/{id:int}/{tags}", tagService.AddTags);
+        app.MapGet("/add/priority/{id:int}/{priority:int}", taskService.SetPriority);
+        
+        app.MapGet("/stats", taskService.GetStats);
         app.MapGet("/routes", (IEnumerable<EndpointDataSource> endpointSources) =>
             string.Join("\n", endpointSources.SelectMany(source => source.Endpoints)));
         
-        
-        static string GetTasks() => "GetTasks";
-        static string GetTaskById(int id) => $"GetTaskById {id}";
-        static string GetTagsById(int id) => $"GetTagsById {id}";
-        static string GetPriorityById(int id) => $"GetPriorityById {id}";
-        static string GetCurrentTasks() => "GetCurrentTasks";
-        static string GetDoneTasks() => "GetDoneTasks";
-        static string GetTags() => "GetTags";
-        static string GetTasksByTag(string tag) => $"GetTasksByTag {tag}"; // tagService.FindByTag();
-        static string GetStats() => $"GetStats"; // taskService.GetStats();
+        app.MapGet("/done/{id:int}", taskService.DoneTask);
+        app.MapGet("/delete/{id:int}", taskService.DeleteTask);
+        app.MapGet("/delete/tag/{id:int}/{tags}", tagService.DeleteTags);
 
         app.Run();
-        
-        /*
-        HandleErrors(taskService.AddTask); 
-        HandleErrors(taskService.DoneTask);
-        HandleErrors(taskService.DeleteTask);
-        HandleErrors(tagService.AddTags);
-        HandleErrors(tagService.DeleteTags);
-        HandleErrors(taskService.SetPriority);
-        */
     }
 }

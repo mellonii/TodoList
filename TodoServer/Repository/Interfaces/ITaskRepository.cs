@@ -14,5 +14,5 @@ internal interface ITaskRepository
     Dictionary<int, Todo> GetCurrentTasksList();
     Dictionary<int, Todo> GetDoneTasksList();
     TodoStats GetStats();
-    bool SetPriority(Todo task, int priority);
+    void SetPriority(Todo task, int priority);
 }

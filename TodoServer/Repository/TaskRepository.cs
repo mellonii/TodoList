@@ -19,11 +19,7 @@ internal class TaskRepository : ITaskRepository
     
     public Todo? GetByIdOrDefault(int id)
     {
-        if (TaskList.ContainsKey(id))
-        {
-            return TaskList[id];
-        }
-        return null;
+        return TaskList.ContainsKey(id) ? TaskList[id] : null;
     }
 
     public void DoneCurrentTask(int id)
@@ -47,35 +43,21 @@ internal class TaskRepository : ITaskRepository
     
     public Dictionary<int, Todo> GetCurrentTasksList()
     {
-        Dictionary<int, Todo> currentTaskList = new();
-        foreach (var (key, task) in TaskList)
-        {
-            if (!task.IsDone)
-            {
-                currentTaskList.Add(key, task);
-            }
-        }
-        return currentTaskList;
+        return TaskList
+            .Where(task => !task.Value.IsDone)
+            .ToDictionary(task => task.Key, task => task.Value);
     } 
     
     public Dictionary<int, Todo> GetDoneTasksList()
     {
-        Dictionary<int, Todo> doneTaskList = new();
-        foreach (var (key, task) in TaskList)
-        {
-            if (task.IsDone)
-            {
-                doneTaskList.Add(key, task);
-            }
-        }
-        return doneTaskList;
+        return TaskList
+            .Where(task => task.Value.IsDone)
+            .ToDictionary(task => task.Key, task => task.Value);
     }
 
-    public bool SetPriority(Todo task, int priority)
+    public void SetPriority(Todo task, int priority)
     {
-        if (priority is < 0 or > 3) return false;
         task.Priority = priority;
-        return true;
     }
     
     public TodoStats GetStats()

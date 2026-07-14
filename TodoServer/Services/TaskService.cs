@@ -25,190 +25,87 @@ internal class TaskService : ITaskService
         Console.ForegroundColor = originalColor;
     }
     
-    public void AddTask()
+    public void AddSimpleTask(string title)
     {
-        Console.WriteLine("\n" + """
-                          Выбери тип создаваемой задачи:
-                          1 - обычная
-                          2 - с дедлайном
-                          3 - с подзадачами
-                          0 - вернуться
-                          """ + "\n");
-
-        if (!int.TryParse(Console.ReadLine(), out var state))
-        {
-            Console.WriteLine("Такой операции не существует\n");
-            return;
-        }
-
-        switch (state)
-        {
-            case 0:
-                return;
-            case 1:
-                AddSimpleTask();
-                break;
-            case 2:
-                AddDeadlinedTask();
-                break;
-            case 3:
-                AddChecklistTask();
-                break;
-            default:
-                Console.WriteLine("Такой операции не существует\n"); 
-                return;
-        }
-        _notify.Invoke($"Задача добавлена!!", ConsoleColor.White);
-    }
-
-    private void AddSimpleTask()
-    {
-        Console.WriteLine("Введите описание задачи:");
-        var title = "" + Console.ReadLine();
-        if (title is "")
-        {
-            throw new EmptyReadLineException();
-        }
+        if (title is "") throw new EmptyReadLineException();
         _taskRepository.Add(new Todo(title));
     }
 
-    private void AddDeadlinedTask()
+    public void AddDeadlinedTask(string title, DateTimeOffset time)
     {
-        Console.WriteLine("Введите описание задачи:");
-        var title = "" + Console.ReadLine();
-        if (title is "")
-        {
-            throw new EmptyReadLineException();
-        }
-        while (true)
-        {
-            Console.WriteLine("Введите дату в формате dd/mm/YYYY hh:mm:ss");
-            if (!DateTimeOffset.TryParse("" + Console.ReadLine(), out var deadlineTime))
-            {
-                Console.WriteLine("Неправильно введена дата");
-            }
-            else
-            {
-                _taskRepository.Add(new DeadlinedTask(title, deadlineTime));
-                break;
-            }
-        }
+        if (title is "") throw new EmptyReadLineException();
+        _taskRepository.Add(new DeadlinedTask(title, time));
     }
 
-    private void AddChecklistTask()
+    public void AddChecklistTask(string title, string text)
     {
-        Console.WriteLine("Введите описание задачи:");
-        var title = "" + Console.ReadLine();
-        if (title is "")
-        {
-            throw new EmptyReadLineException();
-        }
-        Console.WriteLine("Введи подзадачи:");
-        List<string> subTasks = [];
-        while (true)
-        {
-            var subTask = "" + Console.ReadLine();
-            if (subTask.Trim() is "")
-            {
-                break;
-            }
-            subTasks.Add(subTask);
-        }
-        _taskRepository.Add(new ChecklistTask(title,  subTasks));
+        if (title is "") throw new EmptyReadLineException();
+        var subTasks = text.Split(',').Select(t => t.Trim()).ToList();
+        _taskRepository.Add(new ChecklistTask(title, subTasks));
     }
 
-    public void DoneTask()
+    public void DoneTask(int id)
     {
-        if (_taskRepository.GetCurrentTasksCount() == 0)
-        {
-            Console.WriteLine("Список задач пуст\n");
-            return;
-        }
-        
-        Console.WriteLine("Введите номер выполненной задачи:");
-
-        if (int.TryParse(Console.ReadLine(), out var id))
-        {
-            _taskRepository.DoneCurrentTask(id);
-            _notify.Invoke($"Задача {_taskRepository.GetByIdOrDefault(id).Title} выполнена!!", ConsoleColor.Green);
-        }
-        else throw new InvalidTodoDataException();
+        _taskRepository.DoneCurrentTask(id);
+        _notify.Invoke($"Задача {_taskRepository.GetByIdOrDefault(id).Title} выполнена!!", ConsoleColor.Green);
     }
     
-    public void DeleteTask()
+    public void DeleteTask(int id)
     {
-        if (_taskRepository.GetDoneTasksCount() == 0)
-        {
-            Console.WriteLine("Список выполненных задач пуст\n");
-            return;
-        }
-        
-        Console.WriteLine("Введите номер выполненной задачи:");
-        
-        if (int.TryParse(Console.ReadLine(), out var id))
-        {
-            var title = _taskRepository.DeleteDoneTask(id);
-            _notify.Invoke($"Задача {title} удалена!!", ConsoleColor.Green);
-        }
-        else throw new InvalidTodoDataException();
+        var title = _taskRepository.DeleteDoneTask(id);
+        _notify.Invoke($"Задача {title} удалена!!", ConsoleColor.Green);
     }
 
-    public void ShowTasks()
+    public string GetTasks()
     {
-        if (_taskRepository.GetCurrentTasksCount() != 0)
-        {
-            Console.WriteLine("Список текущих задач:");
-            var title = "";
-            foreach (var task in _taskRepository.GetCurrentTasksList())
-            {
-                title += Convert.ToString(task.Key) + ": " + task.Value + "\n";
-            }
-            Console.WriteLine(title + "\n");
-        }
-
-        if (_taskRepository.GetDoneTasksCount() != 0)
-        {
-            Console.WriteLine("Список выполненных задач:");
-            var title = "";
-            foreach (var task in _taskRepository.GetDoneTasksList())
-            {
-                title += Convert.ToString(task.Key) + ": " + task.Value + "\n";
-            }
-            Console.WriteLine(title + "\n");
-        }
+        return GetCurrentTasks() + GetDoneTasks();
     }
 
-    public void SetPriority()
+    public string GetCurrentTasks()
     {
-        if (!_taskRepository.EnsureTaskNotEmpty())
-        {
-            Console.WriteLine("Список задач пуст\n");
-            return;
-        }
+        var tasks = "";
+        if (_taskRepository.GetCurrentTasksCount() == 0) return tasks;
         
-        Console.WriteLine("Введите номер задачи:");
-        
-        if (int.TryParse(Console.ReadLine(), out var id))
-        {
-            var task = _taskRepository.GetByIdOrDefault(id);
-            if (task is not null)
-            {
-                while (true)
-                {
-                    Console.WriteLine("Введите приоритет задачи (от 1 до 3, по умолчанию 0):");
-                    if (!int.TryParse(Console.ReadLine(), out var priority)) continue;
-                    if (_taskRepository.SetPriority(task, priority)) break;
-                }
-            }
-            else throw new TodoNotFoundException();
-        }
-        else throw new InvalidTodoDataException();
+        tasks += "Список текущих задач:\n";
+        tasks += _taskRepository.GetCurrentTasksList().Aggregate("", (tmp, pair) => tmp + pair.Key + ": " + pair.Value + "\n");
+        tasks += "\n";
+        return tasks;
     }
 
-    public void GetStats()
+    public string GetDoneTasks()
+    {
+        var tasks = "";
+        if (_taskRepository.GetDoneTasksCount() == 0) return tasks;
+        
+        tasks += "Список выполненных задач:\n";
+        tasks += _taskRepository.GetDoneTasksList().Aggregate("", (tmp, pair) => tmp + pair.Key + ": " + pair.Value + "\n");
+        tasks += "\n";
+        return tasks;
+    }
+
+    public void SetPriority(int id, int priority)
+    {
+        if (priority is < 0 or > 3) return;
+        var task = _taskRepository.GetByIdOrDefault(id);
+        if (task is null) throw new TodoNotFoundException();
+        _taskRepository.SetPriority(task, priority);
+    }
+
+    public string GetStats()
     {
         var stats = _taskRepository.GetStats();
-        Console.WriteLine($"Всего задач: {stats.TasksCount}, выполнено: {stats.DoneTasksCount}, осталось: {stats.OverdueTasksCount}");
+        return $"Всего задач: {stats.TasksCount}, выполнено: {stats.DoneTasksCount}, осталось: {stats.OverdueTasksCount}";
     }
-    
+
+    public string GetTaskById(int id)
+    {
+        var task = _taskRepository.GetByIdOrDefault(id);
+        return task is not null ? task.ToString() : "";
+    }
+
+    public string GetPriorityById(int id)
+    {
+        var task = _taskRepository.GetByIdOrDefault(id);
+        return task is not null ? task.Priority.ToString() : "";
+    }
 }

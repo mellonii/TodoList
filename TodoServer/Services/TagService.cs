@@ -4,89 +4,49 @@ using TodoServer.Services.Interfaces;
 
 namespace TodoServer.Services;
 
-internal class TagService : ITagService
+internal class TagService(ITagRepository tagRepository, ITaskRepository taskRepository)
+    : ITagService
 {
-    private readonly ITagRepository _tagRepository;
-    private readonly ITaskRepository _taskRepository;
-    
-    public TagService(ITagRepository tagRepository, ITaskRepository taskRepository)
+    public void AddTags(int id, string tags)
     {
-        _tagRepository =  tagRepository;
-        _taskRepository = taskRepository;
-    }
-    
-    public void AddTags()
-    {
-        if (!_taskRepository.EnsureTaskNotEmpty())
-        {
-            Console.WriteLine("Список задач пуст\n");
-            return;
-        }
-        
-        Console.WriteLine("Введите номер задачи, которой хотите добавить тег");
-        if (!int.TryParse(Console.ReadLine(), out var id)) throw new TodoNotFoundException();
-        
-        var task = _taskRepository.GetByIdOrDefault(id);
-        if (task is not null)
-        {
-            Console.WriteLine("Введите список тегов через запятую");
-            var tags = "" + Console.ReadLine();
-            if (tags == "") throw new EmptyReadLineException();
-            
-            _tagRepository.AddTags(task, tags);
-            Console.WriteLine("Теги добавлены\n");
-        }
-        else throw new TodoNotFoundException();
+        var task = taskRepository.GetByIdOrDefault(id);
+        if (task is null) throw new TodoNotFoundException();
+        if (tags == "") throw new EmptyReadLineException();
+        tagRepository.AddTags(task, tags);
     }
 
-    public void DeleteTags()
+    public void DeleteTags(int id, string tags)
     {
-        if (!_taskRepository.EnsureTaskNotEmpty())
-        {
-            Console.WriteLine("Список выполненных задач пуст\n");
-            return;
-        }
-        
-        Console.WriteLine("Введите номер задачи, у которой хотите удалить тег");
-        if (!int.TryParse(Console.ReadLine(), out var id)) throw new TodoNotFoundException();
-
-        var task = _taskRepository.GetByIdOrDefault(id);
-        if (task is not null)
-        {
-            if (_tagRepository.GetTagCount(task) == 0)
-            {
-                Console.WriteLine("У данной задачи нет тегов\n");
-                return;
-            }
-            Console.WriteLine("Введите список тегов на удаление через запятую");
-            var tags = "" + Console.ReadLine();
-            if (tags == "") throw new EmptyReadLineException();
-            
-            _tagRepository.DeleteTags(task, tags);
-            Console.WriteLine("Теги удалены\n");
-        }
-        else throw new TodoNotFoundException();
+        var task = taskRepository.GetByIdOrDefault(id);
+        if (task is null) throw new TodoNotFoundException();
+        if (tags == "") throw new EmptyReadLineException();
+        tagRepository.DeleteTags(task, tags);
     }
 
-    public void FindByTag()
+    public string FindByTag(string tag)
     {
-        if (!_taskRepository.EnsureTaskNotEmpty())
-        {
-            Console.WriteLine("Список задач пуст\n");
-            return;
-        }
-        
-        Console.WriteLine("Введите тег");
-        var tag = "" + Console.ReadLine();
         if (tag == "") throw new EmptyReadLineException();
-        var todoList = _tagRepository.FindByTag(tag);
-        if (todoList.Count == 0) Console.WriteLine("Задач с таким тегом нет");
-        
-        List<string> list = [];
-        foreach (var task in todoList)
+        var todoList = tagRepository.FindByTag(tag);
+        return string.Join(", ", todoList.Select(task => task.Value.Title));
+    }
+    
+    public string GetTagsById(int id)
+    {
+        var task = taskRepository.GetByIdOrDefault(id);
+        return task is not null ? string.Join(", ", task.Tags) : "";
+    }
+
+    public string GetTags()
+    {
+        var tags = "";
+        if (taskRepository.GetCurrentTasksCount() != 0)
         {
-            list.Add(task.Value.Title);
+            tags += string.Join(", ", taskRepository.GetCurrentTasksList().Select(task => task.Value.Tags));
         }
-        Console.WriteLine(string.Join(", ", list));
+        if (taskRepository.GetDoneTasksCount() != 0)
+        {
+            tags += string.Join(", ", taskRepository.GetDoneTasksList().Select(task => task.Value.Tags));
+        }
+        return tags;
     }
 }
